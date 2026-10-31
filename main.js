@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
@@ -8,47 +8,55 @@ let mainWindow = null;
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = true;
 
+function sendUpdaterEvent(channel, payload) {
+  if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
+    mainWindow.webContents.send(channel, payload);
+  }
+}
+
 function setupAutoUpdater() {
   // Só verifica atualizações quando o aplicativo estiver empacotado (.exe instalado)
   if (!app.isPackaged) return;
 
-  autoUpdater.on('update-available', async (info) => {
-    const result = await dialog.showMessageBox(mainWindow, {
-      type: 'info',
-      title: 'Nova Atualização Disponível — Break Point Folder Organizer',
-      message: `A versão ${info.version} do Break Point Folder Organizer está disponível!`,
-      detail: 'Deseja baixar e instalar a atualização automaticamente agora?',
-      buttons: ['Sim, Atualizar Agora', 'Mais Tarde'],
-      defaultId: 0,
-      cancelId: 1
+  autoUpdater.on('update-available', (info) => {
+    sendUpdaterEvent('updater:update-available', {
+      version: info.version,
+      releaseDate: info.releaseDate || null
     });
-
-    if (result.response === 0) {
-      autoUpdater.downloadUpdate();
-    }
   });
 
-  autoUpdater.on('update-downloaded', async (info) => {
-    const result = await dialog.showMessageBox(mainWindow, {
-      type: 'question',
-      title: 'Atualização Pronta para Instalar',
-      message: `A versão ${info.version} foi baixada com sucesso.`,
-      detail: 'O aplicativo será reiniciado agora para concluir a atualização.',
-      buttons: ['Reiniciar e Atualizar Agora', 'Depois'],
-      defaultId: 0,
-      cancelId: 1
+  autoUpdater.on('download-progress', (progressObj) => {
+    sendUpdaterEvent('updater:download-progress', {
+      percent: Math.round(progressObj.percent || 0),
+      transferred: progressObj.transferred || 0,
+      total: progressObj.total || 0,
+      bytesPerSecond: progressObj.bytesPerSecond || 0
     });
+  });
 
-    if (result.response === 0) {
-      autoUpdater.quitAndInstall(false, true);
-    }
+  autoUpdater.on('update-downloaded', (info) => {
+    sendUpdaterEvent('updater:update-downloaded', {
+      version: info.version
+    });
   });
 
   autoUpdater.on('error', (err) => {
-    console.error('Erro no AutoUpdater:', err == null ? 'desconhecido' : (err.stack || err).toString());
+    const msg = err == null ? 'Erro desconhecido' : (err.message || err.toString());
+    console.error('Erro no AutoUpdater:', msg);
+    sendUpdaterEvent('updater:error', { message: msg });
   });
 
-  // Verifica se há nova versão disponível no GitHub Releases
+  ipcMain.on('updater:start-download', () => {
+    autoUpdater.downloadUpdate().catch((err) => {
+      console.error('Erro ao baixar atualização:', err);
+    });
+  });
+
+  ipcMain.on('updater:quit-and-install', () => {
+    autoUpdater.quitAndInstall(false, true);
+  });
+
+  // Verifica se há nova versão disponível no GitHub Releases assim que a página terminar de carregar
   autoUpdater.checkForUpdates().catch((err) => {
     console.error('Falha ao buscar atualizações:', err);
   });
@@ -63,13 +71,14 @@ function createWindow() {
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: false,
-      contextIsolation: true
+      contextIsolation: true,
+      preload: path.join(__dirname, 'src', 'js', 'preload.js')
     }
   });
 
   mainWindow.loadFile('index.html');
 
-  mainWindow.once('ready-to-show', () => {
+  mainWindow.webContents.once('did-finish-load', () => {
     setupAutoUpdater();
   });
 }

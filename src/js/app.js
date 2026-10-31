@@ -276,6 +276,9 @@ const UIController = {
 
     // Eventos do Módulo Relatório de Estoque Shopify (Inventory Report)
     this.bindInventoryReportEvents();
+
+    // Eventos do Modal de Atualização Automática (Padrão Break Point)
+    this.bindAutoUpdateEvents();
   },
 
   switchMainApp(appName) {
@@ -1157,6 +1160,96 @@ const UIController = {
     document.getElementById("invIncomingTextarea").value = "";
     document.getElementById("invStatusBanner").classList.add("hidden");
     document.getElementById("invPreviewSection").classList.add("hidden");
+  },
+
+  // =========================================================================
+  // CONTROLADOR DO MODAL DE ATUALIZAÇÃO AUTOMÁTICA (PADRÃO BREAK POINT)
+  // =========================================================================
+  bindAutoUpdateEvents() {
+    const modal = document.getElementById("autoUpdateModal");
+    if (!modal) return;
+
+    const badge = document.getElementById("updateModalBadge");
+    const versionTag = document.getElementById("updateModalVersionTag");
+    const headline = document.getElementById("updateModalHeadline");
+    const desc = document.getElementById("updateModalDescription");
+    const progressBox = document.getElementById("updateModalProgressBox");
+    const progressText = document.getElementById("updateModalProgressText");
+    const progressPct = document.getElementById("updateModalProgressPct");
+    const progressBar = document.getElementById("updateModalProgressBar");
+    const btnLater = document.getElementById("btnUpdateLater");
+    const btnConfirm = document.getElementById("btnUpdateConfirm");
+    const btnInstallNow = document.getElementById("btnUpdateInstallNow");
+
+    const closeUpdateModal = () => {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    };
+
+    btnLater.addEventListener("click", closeUpdateModal);
+
+    btnConfirm.addEventListener("click", () => {
+      btnConfirm.classList.add("hidden");
+      btnLater.textContent = "Ocultar";
+      progressBox.classList.remove("hidden");
+      progressText.textContent = "Iniciando download da atualização...";
+      progressPct.textContent = "0%";
+      progressBar.style.width = "0%";
+      if (window.bpUpdater?.startDownload) {
+        window.bpUpdater.startDownload();
+      }
+    });
+
+    btnInstallNow.addEventListener("click", () => {
+      btnInstallNow.disabled = true;
+      btnInstallNow.innerHTML = "<span>⏳ Reiniciando...</span>";
+      if (window.bpUpdater?.quitAndInstall) {
+        window.bpUpdater.quitAndInstall();
+      }
+    });
+
+    if (window.bpUpdater) {
+      window.bpUpdater.onUpdateAvailable((data) => {
+        const ver = data?.version || "Nova";
+        versionTag.textContent = `v${ver}`;
+        badge.textContent = "NOVA ATUALIZAÇÃO DISPONÍVEL";
+        headline.textContent = `A versão ${ver} do Break Point está disponível!`;
+        desc.textContent = "Deseja baixar e instalar a atualização automaticamente agora? O processo é rápido e mantém todas as suas configurações.";
+        progressBox.classList.add("hidden");
+        btnConfirm.classList.remove("hidden");
+        btnInstallNow.classList.add("hidden");
+        btnLater.textContent = "Mais Tarde";
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      });
+
+      window.bpUpdater.onDownloadProgress((prog) => {
+        const pct = Math.min(100, Math.max(0, prog?.percent || 0));
+        progressBox.classList.remove("hidden");
+        const mbDone = prog?.transferred ? (prog.transferred / 1024 / 1024).toFixed(1) : null;
+        const mbTotal = prog?.total ? (prog.total / 1024 / 1024).toFixed(1) : null;
+        progressText.textContent = mbDone && mbTotal
+          ? `Baixando pacote (${mbDone} MB / ${mbTotal} MB)...`
+          : "Baixando pacote de atualização...";
+        progressPct.textContent = `${pct}%`;
+        progressBar.style.width = `${pct}%`;
+      });
+
+      window.bpUpdater.onUpdateDownloaded((data) => {
+        const ver = data?.version || "";
+        badge.textContent = "✓ ATUALIZAÇÃO PRONTA";
+        headline.textContent = `Versão ${ver} baixada com sucesso!`;
+        desc.textContent = "O aplicativo será reiniciado agora para concluir a instalação da nova versão.";
+        progressBar.style.width = "100%";
+        progressPct.textContent = "100%";
+        progressText.textContent = "Download concluído!";
+        btnConfirm.classList.add("hidden");
+        btnInstallNow.classList.remove("hidden");
+        btnLater.textContent = "Depois";
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      });
+    }
   }
 };
 

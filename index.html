@@ -856,6 +856,66 @@
     </div>
   </div>
 
+  <!-- MODAL DE ATUALIZAÇÃO AUTOMÁTICA (PADRÃO BREAK POINT) -->
+  <div id="autoUpdateModal" class="fixed inset-0 bg-[#17181c]/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-[#faf7f1] border-2 border-[#17181c] rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
+      <!-- Header Escuro Break Point -->
+      <div class="bg-[#17181c] text-[#faf7f1] px-6 py-4 flex items-center justify-between gap-3 border-b border-[#2d2e35]">
+        <div class="flex items-center gap-3">
+          <svg class="w-8 h-8 rounded-sm shrink-0 shadow-sm" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Break Point Logo">
+            <rect width="200" height="200" fill="#ffffff"/>
+            <rect x="8" y="8" width="184" height="184" fill="#000000"/>
+            <path fill="#ffffff" fill-rule="evenodd" d="M75 48 H132 C162 48 179 61 179 79 C179 97 162 109 132 109 H125 V138 C125 146 130 149 140 150 V152 H75 C42 152 21 139 21 122 C21 108 32 99 47 96 C34 93 26 84 26 72 C26 57 44 48 75 48 Z M81 55 H68 C50 55 42 62 42 73 C42 84 51 92 69 92 H81 V55 Z M81 101 H67 C48 101 39 109 39 122 C39 136 49 144 68 144 H81 V101 Z M97 58 C97 53 100 51 103 51 C106 51 109 53 109 58 V142 C109 147 106 149 103 149 C100 149 97 147 97 142 Z M125 55 V101 H133 C152 101 162 93 162 78 C162 63 152 55 133 55 H125 Z"/>
+          </svg>
+          <div>
+            <span id="updateModalBadge" class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded border border-[#d49b27]/60 text-[#f3be4f] bg-[#d49b27]/15">
+              NOVA ATUALIZAÇÃO DISPONÍVEL
+            </span>
+          </div>
+        </div>
+        <span id="updateModalVersionTag" class="font-mono text-xs font-black px-2.5 py-1 rounded bg-[#25272e] text-[#f3be4f] border border-[#3d404c]">
+          v1.0.3
+        </span>
+      </div>
+
+      <!-- Corpo do Modal -->
+      <div class="p-6 space-y-5">
+        <div class="space-y-1.5">
+          <h3 id="updateModalHeadline" class="text-lg font-black text-[#17181c] tracking-tight">
+            Uma nova versão do Break Point está disponível!
+          </h3>
+          <p id="updateModalDescription" class="text-xs text-[#4a463d] leading-relaxed">
+            Deseja baixar e instalar a atualização automaticamente agora? O processo é rápido e mantém todas as suas configurações.
+          </p>
+        </div>
+
+        <!-- Barra de Progresso do Download da Atualização -->
+        <div id="updateModalProgressBox" class="hidden bg-white border border-[#dcd3c0] rounded-xl p-4 space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span id="updateModalProgressText" class="font-bold text-[#17181c]">Baixando atualização...</span>
+            <span id="updateModalProgressPct" class="font-mono font-black text-[#1b7a4e]">0%</span>
+          </div>
+          <div class="w-full h-2.5 bg-[#e5dec9] rounded-full overflow-hidden">
+            <div id="updateModalProgressBar" class="h-full bg-[#1b7a4e] transition-all duration-150" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div id="updateModalActions" class="flex items-center justify-end gap-3 pt-1">
+          <button id="btnUpdateLater" type="button" class="px-4 py-2.5 rounded-lg bg-[#f2ece1] hover:bg-[#e5dec9] text-[#4a463d] text-xs font-bold border border-[#cfc6b4] transition cursor-pointer">
+            Mais Tarde
+          </button>
+          <button id="btnUpdateConfirm" type="button" class="px-5 py-2.5 rounded-lg bg-[#17181c] hover:bg-[#2c2e36] text-[#f3be4f] font-black text-xs uppercase tracking-wider shadow-md transition cursor-pointer inline-flex items-center gap-2">
+            <span>⬇️ Sim, Atualizar Agora</span>
+          </button>
+          <button id="btnUpdateInstallNow" type="button" class="hidden px-5 py-2.5 rounded-lg bg-[#1b7a4e] hover:bg-[#15603e] text-white font-black text-xs uppercase tracking-wider shadow-md transition cursor-pointer inline-flex items-center gap-2">
+            <span>🚀 Reiniciar e Instalar Agora</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Módulos da Aplicação -->
   <script src="src/js/config.js"></script>
   <script src="src/js/utils.js"></script>
