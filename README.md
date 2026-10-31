@@ -7,6 +7,22 @@ Clique no botão abaixo para baixar diretamente a última versão do instalador 
 [![Baixar Instalador Windows (Setup .exe)](https://img.shields.io/badge/%E2%AC%87%EF%B8%8F_BAIXAR_INSTALADOR_WINDOWS-Setup_1.0.1.exe-1b7a4e?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Break-Point-Folder-Organizer-Setup-1.0.1.exe)
 [![Ver Última Release no GitHub](https://img.shields.io/badge/GitHub_Releases-Ver_Vers%C3%A3o_Mais_Recente-17181c?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest)
 
+### 🗑️ Passo a Passo: Como Remover a Versão Antiga (`1.0.0`) e Instalar a Nova (`1.0.1+`)
+
+Se você tinha a **versão antiga (`1.0.0` - Break Point Organizer)** instalada no computador (que não possuía atualização automática), siga estes passos rápidos **uma única vez**:
+
+1. **Feche o aplicativo antigo** caso ele esteja aberto.
+2. **Desinstale a versão antiga do Windows:**
+   * Pressione a tecla **Windows** no teclado e digite **Adicionar ou remover programas** (ou **Aplicativos instalados**) e aperte **Enter**.
+   * Na barra de pesquisa de aplicativos, digite **`Break Point`**.
+   * Clique nos três pontinhos (`...`) ao lado de **Break Point Organizer (1.0.0)** e selecione **Desinstalar**.
+   * *(Caso você usasse apenas o arquivo portátil antigo solto na Área de Trabalho ou pasta Downloads, basta clicar com o botão direito nele e **Excluir**).*
+3. **Baixe e instale a versão nova (`1.0.1`):**
+   * Clique no botão verde **⬇️ BAIXAR INSTALADOR WINDOWS** acima para baixar o `Break-Point-Folder-Organizer-Setup-1.0.1.exe`.
+   * Abra o instalador baixado, avance e conclua a instalação.
+   * *(Se o Windows exibir a tela azul do SmartScreen "O Windows protegeu o computador", clique em **Mais informações** e depois em **Executar assim mesmo**).*
+4. **Pronto!** A partir desta versão `1.0.1`, você **nunca mais precisará desinstalar manualmente**: sempre que sair uma atualização nova, o próprio programa avisará ao abrir e atualizará sozinho com 1 clique!
+
 ---
 
 Este documento reúne a visão geral, regras de negócio consolidadas, arquitetura de software modular e instruções de geração do executável (`.exe`) do sistema **Break Point — Print Files & Mockup Organizer**.
