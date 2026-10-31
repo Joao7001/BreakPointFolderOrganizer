@@ -268,10 +268,24 @@ const ZipProcessor = {
       const fullZipPath = `${cleanFolder}/${item.finalName}`;
       outZip.file(fullZipPath, item.bytes, { binary: true });
       integrityLogs.push({ fullZipPath, sourceRole: item.sourceRole, crc32: BinaryUtils.crc32(item.bytes) });
-      if (onProgress) onProgress(Math.round(((i + 1) / activeItems.length) * 100), `Empacotando ${fullZipPath}...`);
+      if (onProgress) {
+        const stagePct = Math.max(1, Math.round(((i + 1) / Math.max(activeItems.length, 1)) * 15));
+        onProgress(stagePct, `Preparando ${item.finalName}...`);
+      }
+      if (i % 10 === 0) await new Promise((r) => setTimeout(r, 0));
     }
 
-    const blob = await outZip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
+    const blob = await outZip.generateAsync(
+      { type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } },
+      (metadata) => {
+        if (onProgress) {
+          const totalPct = Math.min(99, Math.max(15, Math.round(15 + (metadata.percent || 0) * 0.85)));
+          const fileName = metadata.currentFile ? metadata.currentFile.split("/").pop() : "";
+          onProgress(totalPct, fileName ? `Compactando ${fileName}...` : "Compactando pacote ZIP...");
+        }
+      }
+    );
+    if (onProgress) onProgress(100, "ZIP concluído!");
     return { blob, zipInstance: outZip, integrityLogs, createdFolders: Array.from(createdFoldersSet) };
   }
 };

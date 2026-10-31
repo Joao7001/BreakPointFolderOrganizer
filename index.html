@@ -8,6 +8,7 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23000000'/%3E%3Crect x='10' y='10' width='180' height='180' fill='%23ffffff'/%3E%3Cpath fill='%23000000' fill-rule='evenodd' d='M75 48 H132 C162 48 179 61 179 79 C179 97 162 109 132 109 H125 V138 C125 146 130 149 140 150 V152 H75 C42 152 21 139 21 122 C21 108 32 99 47 96 C34 93 26 84 26 72 C26 57 44 48 75 48 Z M81 55 H68 C50 55 42 62 42 73 C42 84 51 92 69 92 H81 V55 Z M81 101 H67 C48 101 39 109 39 122 C39 136 49 144 68 144 H81 V101 Z M97 58 C97 53 100 51 103 51 C106 51 109 53 109 58 V142 C109 147 106 149 103 149 C100 149 97 147 97 142 Z M125 55 V101 H133 C152 101 162 93 162 78 C162 63 152 55 133 55 H125 Z'/%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,7 +16,7 @@
 </head>
 <body class="min-h-screen flex flex-col bg-[#faf7f1] text-[#17181c]">
 
-  <!-- Top Header Limpo -->
+  <!-- Top Header Limpo com os 2 Botões de Navegação no Topo -->
   <header class="bg-[#17181c] text-[#faf7f1] border-b border-[#2d2e35] sticky top-0 z-30 shadow-md">
     <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
@@ -26,19 +27,34 @@
         </svg>
         <div class="flex items-center gap-2.5 flex-wrap">
           <span class="font-black text-base sm:text-lg tracking-wider uppercase text-[#faf7f1]">BREAK POINT</span>
-          <span class="text-[11px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border border-[#d49b27]/60 text-[#f3be4f] bg-[#d49b27]/10">
+          <span id="headerPortalBadge" class="text-[11px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border border-[#d49b27]/60 text-[#f3be4f] bg-[#d49b27]/10">
             SETUP PORTAL
           </span>
-          <span class="hidden md:inline-block text-xs text-[#a09c93] pl-1">
+          <span id="headerPortalSubtitle" class="hidden md:inline-block text-xs text-[#a09c93] pl-1">
             Print Files & Mockup Organizer
           </span>
         </div>
+      </div>
+
+      <!-- 2 Botões Principais no Topo: Organizador de Folders & App de Relatórios -->
+      <div class="flex items-center gap-2">
+        <button id="btnNavFolderOrganizer" type="button" class="px-4 py-2 rounded-lg bg-[#f3be4f] text-[#17181c] text-xs font-black uppercase tracking-wider transition shadow-sm border border-[#f3be4f] cursor-pointer inline-flex items-center gap-2">
+          <span>📁 Organizador de Pastas</span>
+        </button>
+        <button id="btnNavInventoryReport" type="button" class="px-4 py-2 rounded-lg bg-[#25272e] hover:bg-[#32353e] text-[#faf7f1] text-xs font-black uppercase tracking-wider transition border border-[#3d404c] cursor-pointer inline-flex items-center gap-2">
+          <span>📊 Relatório de Estoque</span>
+        </button>
       </div>
     </div>
   </header>
 
   <!-- Main Container -->
   <main class="max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 flex-1 space-y-6">
+
+    <!-- ===================================================================== -->
+    <!-- MÓDULO PRINCIPAL 1: ORGANIZADOR DE PASTAS (SETUP & MY STORE)          -->
+    <!-- ===================================================================== -->
+    <div id="appFolderOrganizer" class="space-y-6">
 
     <!-- Title Banner Unificado com os Botões SETUP e MY STORE ao lado do título -->
     <div class="flex flex-wrap items-end justify-between gap-4 border-b border-[#e2dac9] pb-4">
@@ -294,9 +310,26 @@
             <div class="text-xs text-[#4a463d] font-medium">
               Integridade binária 100% preservada (CRC32).
             </div>
-            <button id="btnConfirmProcess" type="button" class="px-6 py-3 rounded-lg bg-[#17181c] hover:bg-[#2c2e36] text-[#faf7f1] font-black text-xs sm:text-sm uppercase tracking-wider shadow-md transition cursor-pointer">
-              ✅ Confirmar e Gerar ZIP Organizado
-            </button>
+
+            <div class="flex flex-wrap items-center justify-end gap-4 flex-1">
+              <!-- Barra de Progresso + Tempo Restante ao lado do botão Confirmar e Gerar ZIP -->
+              <div id="exportZipProgressContainer" class="hidden flex-1 min-w-[280px] max-w-md bg-white border-2 border-[#17181c] rounded-xl px-4 py-2.5 shadow-sm">
+                <div class="flex items-center justify-between gap-2 text-xs mb-1.5">
+                  <span id="exportZipProgressLabel" class="text-[#17181c] font-bold truncate">Preparando pacote ZIP...</span>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span id="exportZipEtaBadge" class="px-2 py-0.5 rounded bg-[#fdf4dc] text-[#785212] border border-[#d49b27] font-mono text-[11px] font-bold">⏱️ Calculando...</span>
+                    <span id="exportZipProgressPercent" class="text-[#1b7a4e] font-mono font-black">0%</span>
+                  </div>
+                </div>
+                <div class="w-full h-2.5 bg-[#e5dec9] rounded-full overflow-hidden">
+                  <div id="exportZipProgressBar" class="h-full bg-[#1b7a4e] transition-all duration-150" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <button id="btnConfirmProcess" type="button" class="px-6 py-3 rounded-lg bg-[#17181c] hover:bg-[#2c2e36] text-[#faf7f1] font-black text-xs sm:text-sm uppercase tracking-wider shadow-md transition cursor-pointer shrink-0">
+                ✅ Confirmar e Gerar ZIP Organizado
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -450,6 +483,337 @@
       </div>
     </section>
 
+    </div><!-- Fim de #appFolderOrganizer -->
+
+    <!-- ===================================================================== -->
+    <!-- MÓDULO PRINCIPAL 2: RELATÓRIO DE ESTOQUE SHOPIFY (INVENTORY REPORT)   -->
+    <!-- ===================================================================== -->
+    <section id="appInventoryReport" class="hidden space-y-6">
+
+      <!-- Title Banner do Relatório de Estoque -->
+      <div class="flex flex-wrap items-end justify-between gap-4 border-b border-[#e2dac9] pb-4">
+        <div>
+          <div class="text-[11px] font-bold uppercase tracking-widest text-[#4a463d]">SHOPIFY · INVENTORY & TAGS SYNC</div>
+          <div class="flex flex-wrap items-center gap-3 mt-0.5">
+            <h1 class="text-2xl sm:text-3xl bp-heading uppercase text-[#17181c]">RELATÓRIO DE ESTOQUE SHOPIFY</h1>
+            <span class="px-2.5 py-1 rounded bg-[#d49b27]/20 text-[#a2690e] font-extrabold text-[11px] uppercase tracking-wider border border-[#d49b27]/40">
+              INVENTORY REPORT
+            </span>
+          </div>
+          <p class="text-xs text-[#4a463d] mt-1">
+            Gere sua planilha de estoque combinando os dois relatórios do Shopify (<strong>inventory_export</strong> + <strong>products_export</strong>) com todas as regras, cores de representantes e filtros originais.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="px-3 py-1.5 rounded-lg bg-[#f2ece1] border border-[#dcd3c0] text-xs flex items-center gap-2">
+            <span class="text-[#4a463d] font-medium">Estoque Máximo:</span>
+            <span id="invHeaderBadgeThreshold" class="font-mono font-bold text-[#17181c] bg-white px-2 py-0.5 rounded border border-[#dcd3c0]">≤ 24</span>
+          </div>
+          <div class="px-3 py-1.5 rounded-lg bg-[#17181c] text-[#faf7f1] text-xs flex items-center gap-2">
+            <span class="text-[#d49b27] font-semibold">Tag de Sincronização:</span>
+            <span class="font-mono font-bold">inventory_sync</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Principal do Relatório de Estoque -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Coluna Esquerda (7 cols): Seleção dos 2 Arquivos + Configurações + Botão Gerar -->
+        <div class="lg:col-span-7 space-y-6">
+
+          <!-- Card 1: Seleção dos 2 Relatórios do Shopify -->
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-5 sm:p-6 shadow-sm space-y-5">
+            <div class="border-b border-[#efe9dc] pb-3">
+              <h2 class="text-sm font-extrabold uppercase tracking-wider text-[#17181c]">1 · ARQUIVOS EXPORTADOS DO SHOPIFY</h2>
+              <p class="text-xs text-[#4a463d] mt-0.5">
+                Selecione o <strong>Relatório de Estoque (inventory_export)</strong> e o <strong>Relatório de Produtos/Tags (products_export)</strong> nos formatos <code>.csv</code>, <code>.xlsx</code> ou <code>.xls</code>.
+              </p>
+            </div>
+
+            <!-- Barra Escura de Importação Dupla Rápida -->
+            <div id="invDropzoneBoth" class="bg-[#17181c] text-[#faf7f1] rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 border-2 border-transparent transition">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] font-bold uppercase tracking-widest text-[#f3be4f]">IMPORTAÇÃO RÁPIDA · INVENTORY + PRODUCTS EXPORT</span>
+                  <span id="invBadgeBothStatus" class="hidden px-2 py-0.5 rounded bg-[#1b7a4e] text-white text-[10px] font-bold">✓ Carregados</span>
+                </div>
+                <div class="text-sm font-bold text-white mt-0.5">
+                  Selecione as 2 planilhas juntas ou arraste os arquivos para cá
+                </div>
+              </div>
+              <div class="shrink-0">
+                <input id="invFileBoth" type="file" accept=".csv,.xlsx,.xls" multiple class="hidden" />
+                <button id="btnInvSelectBoth" type="button" class="px-4 py-2.5 rounded-lg bg-[#faf7f1] hover:bg-[#f3be4f] text-[#17181c] font-black text-xs uppercase tracking-wider transition shadow-lg cursor-pointer inline-flex items-center gap-2">
+                  <span>📊 Selecionar os 2 Relatórios Juntos</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Passo 1: Relatório de Estoque (inventory_export) -->
+            <div class="border border-[#d8d0be] rounded-xl p-4 bg-[#faf7f1] space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-[#17181c] text-[#f3be4f] font-mono text-xs font-black inline-flex items-center justify-center shrink-0">1</span>
+                  <span class="text-xs font-extrabold uppercase tracking-wider text-[#17181c]">Relatório de Estoque (inventory_export)</span>
+                </div>
+                <span id="invStatusInventoryFile" class="text-[11px] font-semibold text-[#4a463d]">Pendente</span>
+              </div>
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                <input id="invDisplayInventoryPath" type="text" readonly value="" placeholder="Nenhum arquivo selecionado (Requer: Handle, Title, SKU, Available (not editable))" class="flex-1 h-10 px-3.5 rounded-lg bg-white border border-[#cfc6b4] text-xs font-mono text-[#17181c] placeholder-[#9ca3af] focus:outline-none" />
+                <input id="invInputInventoryFile" type="file" accept=".csv,.xlsx,.xls" class="hidden" />
+                <button id="btnInvPickInventory" type="button" class="h-10 px-4 rounded-lg bg-[#17181c] hover:bg-[#2c2e36] text-[#faf7f1] text-xs font-bold transition cursor-pointer shrink-0 inline-flex items-center justify-center gap-2">
+                  <span>📁 Escolher arquivo</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Passo 2: Relatório de Produtos/Tags (products_export) -->
+            <div class="border border-[#d8d0be] rounded-xl p-4 bg-[#faf7f1] space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-[#17181c] text-[#f3be4f] font-mono text-xs font-black inline-flex items-center justify-center shrink-0">2</span>
+                  <span class="text-xs font-extrabold uppercase tracking-wider text-[#17181c]">Relatório de Produtos/Tags (products_export)</span>
+                </div>
+                <span id="invStatusTagsFile" class="text-[11px] font-semibold text-[#4a463d]">Pendente</span>
+              </div>
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                <input id="invDisplayTagsPath" type="text" readonly value="" placeholder="Nenhum arquivo selecionado (Requer: Handle, Tags)" class="flex-1 h-10 px-3.5 rounded-lg bg-white border border-[#cfc6b4] text-xs font-mono text-[#17181c] placeholder-[#9ca3af] focus:outline-none" />
+                <input id="invInputTagsFile" type="file" accept=".csv,.xlsx,.xls" class="hidden" />
+                <button id="btnInvPickTags" type="button" class="h-10 px-4 rounded-lg bg-[#17181c] hover:bg-[#2c2e36] text-[#faf7f1] text-xs font-bold transition cursor-pointer shrink-0 inline-flex items-center justify-center gap-2">
+                  <span>📁 Escolher arquivo</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Limite de Estoque & Produtos a Caminho -->
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-5 sm:p-6 shadow-sm space-y-5">
+            <div class="border-b border-[#efe9dc] pb-3">
+              <h2 class="text-sm font-extrabold uppercase tracking-wider text-[#17181c]">2 · PARÂMETROS DE FILTRAGEM DO RELATÓRIO</h2>
+              <p class="text-xs text-[#4a463d] mt-0.5">
+                Defina o limite máximo de unidades disponíveis e informe itens a caminho que também devem ser ocultados do relatório final.
+              </p>
+            </div>
+
+            <!-- Estoque máximo a manter no relatório final -->
+            <div class="bg-[#faf7f1] border border-[#d8d0be] rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
+              <div class="space-y-0.5">
+                <div class="text-xs font-extrabold uppercase tracking-wider text-[#17181c]">Estoque máximo a manter no relatório final</div>
+                <div class="text-xs text-[#4a463d]">Produtos com estoque acima desse valor não serão incluídos.</div>
+              </div>
+              <div class="inline-flex items-center bg-white border-2 border-[#17181c] rounded-lg p-1 shadow-sm">
+                <button id="btnInvThresholdMinus" type="button" class="w-9 h-9 rounded-md bg-[#f2ece1] hover:bg-[#e5dec9] text-[#17181c] font-black text-base transition cursor-pointer flex items-center justify-center select-none">
+                  −
+                </button>
+                <input id="invInputThreshold" type="number" min="0" value="24" class="w-16 h-9 text-center font-mono text-sm font-black text-[#17181c] bg-transparent focus:outline-none" />
+                <button id="btnInvThresholdPlus" type="button" class="w-9 h-9 rounded-md bg-[#f2ece1] hover:bg-[#e5dec9] text-[#17181c] font-black text-base transition cursor-pointer flex items-center justify-center select-none">
+                  +
+                </button>
+              </div>
+            </div>
+
+            <!-- Produtos a caminho (opcional) -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <label for="invIncomingTextarea" class="block text-xs font-extrabold uppercase tracking-wider text-[#17181c]">
+                  Produtos a caminho (opcional)
+                </label>
+                <span class="text-[11px] font-mono text-[#4a463d]">Formato: <code>Título - Variante(SKU)</code> ou <code>Título</code></span>
+              </div>
+              <p class="text-xs text-[#4a463d]">
+                Cole um por linha. Também serão removidos do relatório final (prioriza o SKU entre parênteses no fim da linha ou título exato).
+              </p>
+              <textarea id="invIncomingTextarea" rows="5" placeholder="Exemplo: PRODUTO-1" class="w-full p-3.5 rounded-xl bg-[#faf7f1] border border-[#cfc6b4] text-xs font-mono text-[#17181c] placeholder-[#9ca3af] focus:border-[#17181c] focus:bg-white focus:outline-none custom-scroll"></textarea>
+            </div>
+
+            <!-- Botão Principal Gerar Planilha -->
+            <div class="pt-2 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-3 flex-1">
+                <button id="btnInvGenerateReport" type="button" class="flex-1 min-w-[240px] py-3.5 px-6 rounded-xl bg-[#17181c] hover:bg-[#2c2e36] text-[#faf7f1] font-black text-sm uppercase tracking-wider shadow-md transition cursor-pointer inline-flex items-center justify-center gap-2.5">
+                  <span>📄 Gerar Planilha (.XLSX)</span>
+                </button>
+                <button id="btnInvResetAll" type="button" class="py-3.5 px-4 rounded-xl bg-[#f2ece1] hover:bg-[#e5dec9] text-[#4a463d] font-bold text-xs border border-[#d8d0be] transition cursor-pointer">
+                  Limpar Tudo
+                </button>
+              </div>
+            </div>
+            <div class="text-center text-[11px] text-[#4a463d]">
+              Clique para combinar os arquivos e baixar automaticamente o relatório Excel formatado
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Coluna Direita (5 cols): Regras Ativas, Legenda de Cores dos Representantes & Status -->
+        <div class="lg:col-span-5 space-y-6">
+
+          <!-- Card de Status de Geração (Aparece quando concluído) -->
+          <div id="invStatusBanner" class="hidden bg-[#e3f3eb] border-2 border-[#1b7a4e] rounded-xl p-5 shadow-sm space-y-3">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <span class="px-2 py-0.5 rounded bg-[#1b7a4e] text-white font-black text-[10px] uppercase tracking-wider">RELATÓRIO GERADO COM SUCESSO</span>
+                <h3 id="invStatusHeadline" class="text-base font-black text-[#15603e] mt-1.5">✅ Pronto! 0 produtos no relatório final.</h3>
+                <p id="invStatusFilename" class="text-xs font-mono text-[#17181c] mt-0.5 break-all"></p>
+              </div>
+            </div>
+            <div class="pt-1 flex flex-wrap items-center gap-2.5">
+              <button id="btnInvDownloadAgain" type="button" class="px-4 py-2.5 rounded-lg bg-[#1b7a4e] hover:bg-[#15603e] text-white font-black text-xs uppercase tracking-wider shadow transition cursor-pointer inline-flex items-center gap-2">
+                <span>⬇️ Baixar Planilha Novamente (.XLSX)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card: Legenda Sales Rep Name / Color Marked -->
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-5 sm:p-6 shadow-sm space-y-4">
+            <div class="border-b border-[#efe9dc] pb-3">
+              <h3 class="text-sm font-extrabold uppercase tracking-wider text-[#17181c]">🎨 LEGENDA DE CORES · SALES REP & SYNC</h3>
+              <p class="text-xs text-[#4a463d] mt-0.5">
+                Ordem de prioridade idêntica às regras de formatação condicional da planilha (colunas F e G do Excel gerado).
+              </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5">
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-[#e2dac9] bg-[#faf7f1]">
+                <span class="text-xs font-bold text-[#17181c]">1. Tony</span>
+                <span class="px-3 py-1 rounded text-[11px] font-mono font-bold border border-black/20 text-[#17181c]" style="background-color: #F4CCCC;">#F4CCCC</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-[#e2dac9] bg-[#faf7f1]">
+                <span class="text-xs font-bold text-[#17181c]">2. Brandon</span>
+                <span class="px-3 py-1 rounded text-[11px] font-mono font-bold border border-black/20 text-[#17181c]" style="background-color: #FCE5CD;">#FCE5CD</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-[#e2dac9] bg-[#faf7f1]">
+                <span class="text-xs font-bold text-[#17181c]">3. Gomes</span>
+                <span class="px-3 py-1 rounded text-[11px] font-mono font-bold border border-black/20 text-[#17181c]" style="background-color: #D9EAD3;">#D9EAD3</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-[#e2dac9] bg-[#faf7f1]">
+                <span class="text-xs font-bold text-[#17181c]">4. George</span>
+                <span class="px-3 py-1 rounded text-[11px] font-mono font-bold border border-black/20 text-white" style="background-color: #FF0000;">#FF0000</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-[#e2dac9] bg-[#faf7f1]">
+                <span class="text-xs font-bold text-[#17181c]">5. Rinaldo</span>
+                <span class="px-3 py-1 rounded text-[11px] font-mono font-bold border border-black/20 text-white" style="background-color: #9900FF;">#9900FF</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-[#e2dac9] bg-[#faf7f1]">
+                <span class="text-xs font-bold text-[#17181c]">6. Victor</span>
+                <span class="px-3 py-1 rounded text-[11px] font-mono font-bold border border-black/20 text-[#17181c]" style="background-color: #00FFFF;">#00FFFF</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-[#e2dac9] bg-[#faf7f1]">
+                <span class="text-xs font-bold text-[#17181c]">7. Rossina</span>
+                <span class="px-3 py-1 rounded text-[11px] font-mono font-bold border border-black/20 text-[#17181c]" style="background-color: #FF9900;">#FF9900</span>
+              </div>
+            </div>
+
+            <div class="border-t border-[#efe9dc] pt-3">
+              <div class="text-[11px] font-extrabold uppercase tracking-wider text-[#4a463d] mb-2">Coluna "Registered in the APP Inv Sync"</div>
+              <div class="grid grid-cols-2 gap-2.5">
+                <div class="flex items-center justify-between p-2.5 rounded-lg border border-[#e2dac9]" style="background-color: #D9EAD3;">
+                  <span class="text-xs font-extrabold text-[#17181c]">YES</span>
+                  <span class="text-[11px] font-mono text-[#17181c]">Tag: inventory_sync</span>
+                </div>
+                <div class="flex items-center justify-between p-2.5 rounded-lg border border-[#e2dac9]" style="background-color: #F4CCCC;">
+                  <span class="text-xs font-extrabold text-[#17181c]">NO</span>
+                  <span class="text-[11px] font-mono text-[#17181c]">Sem tag</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card: Regras Automáticas de Exclusão Aplicadas -->
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-5 sm:p-6 shadow-sm space-y-3">
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-[#17181c]">⚙️ REGRAS AUTOMÁTICAS ATIVAS NO MOTOR</h3>
+            <ul class="text-xs text-[#4a463d] space-y-1.5 list-disc pl-4">
+              <li>Cruza o <code>Handle</code> do estoque com a primeira Tag não-vazia do arquivo de produtos.</li>
+              <li>Remove automaticamente itens com <code>TEST</code>, <code>ActionOrder</code> / <code>Action Order</code>, <code>Action Sublimation</code> ou código <code>S0</code>/<code>S1</code>/<code>S2</code> + números no Handle ou nas Tags.</li>
+              <li>Remove títulos fixos de exceção (<em>New Breed Patch Set</em>, <em>Kingsway Jiu-Jitsu #999 A/B</em>, <em>Belt Patch Tom DeBlass #1000</em>).</li>
+              <li>Ordena do maior para o menor estoque disponível (ordenação estável) com AutoFilter e larguras de coluna prontas.</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Seção de Pré-Visualização da Planilha Gerada -->
+      <div id="invPreviewSection" class="hidden space-y-6">
+
+        <!-- KPIs do Relatório -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="invMetricFinalCount" class="text-2xl font-black text-[#17181c]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">PRODUTOS NO RELATÓRIO</div>
+          </div>
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="invMetricSyncYes" class="text-2xl font-black text-[#15603e]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">INV SYNC · YES</div>
+          </div>
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="invMetricSyncNo" class="text-2xl font-black text-[#bf2626]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">INV SYNC · NO</div>
+          </div>
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="invMetricExcludedRules" class="text-2xl font-black text-[#b45309]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">EXCLUÍDOS POR PADRÃO</div>
+          </div>
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="invMetricExcludedIncoming" class="text-2xl font-black text-[#1e40af]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">A CAMINHO REMOVIDOS</div>
+          </div>
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="invMetricExcludedQty" class="text-2xl font-black text-[#4a463d]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">ACIMA DO ESTOQUE MÁX.</div>
+          </div>
+        </div>
+
+        <!-- Tabela de Pré-Visualização Idêntica à Planilha -->
+        <div class="bg-white border border-[#e2dac9] rounded-xl shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-[#e2dac9] bg-[#faf7f1] flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-extrabold uppercase tracking-wider text-[#17181c]">📋 PRÉ-VISUALIZAÇÃO DA PLANILHA GERADA (INVENTORY REPORT)</h3>
+              <p class="text-xs text-[#4a463d] mt-0.5">
+                Exibindo exatamente as linhas, cores de representantes e status que foram gravados no arquivo <code>.xlsx</code>.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5">
+              <input id="invSearchTable" type="text" placeholder="Pesquisar título, tag ou representante..." class="w-64 h-9 px-3.5 rounded-lg bg-white border border-[#cfc6b4] text-xs text-[#17181c] font-medium focus:border-[#17181c] focus:outline-none" />
+              <select id="invFilterRep" class="h-9 px-3.5 rounded-lg bg-white border border-[#cfc6b4] text-xs font-bold text-[#17181c] focus:border-[#17181c] focus:outline-none">
+                <option value="ALL">Todos os Representantes</option>
+                <option value="Tony">Tony</option>
+                <option value="Brandon">Brandon</option>
+                <option value="Gomes">Gomes</option>
+                <option value="George">George</option>
+                <option value="Rinaldo">Rinaldo</option>
+                <option value="Victor">Victor</option>
+                <option value="Rossina">Rossina</option>
+                <option value="NONE">Sem Representante</option>
+              </select>
+              <select id="invFilterSync" class="h-9 px-3.5 rounded-lg bg-white border border-[#cfc6b4] text-xs font-bold text-[#17181c] focus:border-[#17181c] focus:outline-none">
+                <option value="ALL">Todos os Status (YES / NO)</option>
+                <option value="YES">Somente YES (Sincronizado)</option>
+                <option value="NO">Somente NO (Não Sincronizado)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto custom-scroll max-h-[560px]">
+            <table class="w-full text-left border-collapse min-w-[920px]">
+              <thead class="bg-[#f2ece1] border-b-2 border-[#dfd7c6] sticky top-0 z-20 shadow-sm">
+                <tr class="text-[11px] font-extrabold uppercase tracking-wider text-[#4a463d]">
+                  <th class="py-3 px-4 w-[36%]">Title</th>
+                  <th class="py-3 px-4 w-[38%]">Tags (Cor do Representante)</th>
+                  <th class="py-3 px-4 w-[10%] text-center">Variant Inventory Qty</th>
+                  <th class="py-3 px-4 w-[16%] text-center">Registered in the APP Inv Sync</th>
+                </tr>
+              </thead>
+              <tbody id="invPreviewTableBody" class="divide-y divide-[#efe9dc] text-xs bg-white"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
   </main>
 
   <!-- MODAL DE PREVIEW AMPLIADO -->
@@ -497,6 +861,7 @@
   <script src="src/js/utils.js"></script>
   <script src="src/js/classifier.js"></script>
   <script src="src/js/processors.js"></script>
+  <script src="src/js/inventoryReport.js"></script>
   <script src="src/js/app.js"></script>
 </body>
 </html>

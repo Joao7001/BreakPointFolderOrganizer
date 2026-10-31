@@ -61,6 +61,13 @@ const AppState = {
   mystoreNewMockupsZip: null,
   mystoreExportBlob: null,
 
+  // Estado do módulo Relatório de Estoque Shopify (Inventory Report)
+  invInventoryFile: null,
+  invTagsFile: null,
+  invLastRows: [],
+  invLastBlob: null,
+  invLastFilename: "relatorio_estoque.xlsx",
+
   getConfig() {
     return {
       designNumber: document.getElementById("inputDesignNumber").value.trim() || "980",
@@ -146,6 +153,10 @@ const UIController = {
   },
 
   bindEvents() {
+    // Botões de navegação principal no Topo (Header)
+    document.getElementById("btnNavFolderOrganizer").addEventListener("click", () => this.switchMainApp("folder_organizer"));
+    document.getElementById("btnNavInventoryReport").addEventListener("click", () => this.switchMainApp("inventory_report"));
+
     document.getElementById("btnTabWorkflow").addEventListener("click", () => this.switchTab("workflow"));
     document.getElementById("btnTabMystore").addEventListener("click", () => this.switchTab("mystore"));
 
@@ -262,6 +273,32 @@ const UIController = {
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") this.closeImageModal();
     });
+
+    // Eventos do Módulo Relatório de Estoque Shopify (Inventory Report)
+    this.bindInventoryReportEvents();
+  },
+
+  switchMainApp(appName) {
+    const isFolderApp = appName === "folder_organizer";
+    document.getElementById("appFolderOrganizer").classList.toggle("hidden", !isFolderApp);
+    document.getElementById("appInventoryReport").classList.toggle("hidden", isFolderApp);
+
+    const btnFolder = document.getElementById("btnNavFolderOrganizer");
+    const btnInv = document.getElementById("btnNavInventoryReport");
+    const badge = document.getElementById("headerPortalBadge");
+    const subtitle = document.getElementById("headerPortalSubtitle");
+
+    if (isFolderApp) {
+      btnFolder.className = "px-4 py-2 rounded-lg bg-[#f3be4f] text-[#17181c] text-xs font-black uppercase tracking-wider transition shadow-sm border border-[#f3be4f] cursor-pointer inline-flex items-center gap-2";
+      btnInv.className = "px-4 py-2 rounded-lg bg-[#25272e] hover:bg-[#32353e] text-[#faf7f1] text-xs font-black uppercase tracking-wider transition border border-[#3d404c] cursor-pointer inline-flex items-center gap-2";
+      if (badge) badge.textContent = "SETUP PORTAL";
+      if (subtitle) subtitle.textContent = "Print Files & Mockup Organizer";
+    } else {
+      btnInv.className = "px-4 py-2 rounded-lg bg-[#f3be4f] text-[#17181c] text-xs font-black uppercase tracking-wider transition shadow-sm border border-[#f3be4f] cursor-pointer inline-flex items-center gap-2";
+      btnFolder.className = "px-4 py-2 rounded-lg bg-[#25272e] hover:bg-[#32353e] text-[#faf7f1] text-xs font-black uppercase tracking-wider transition border border-[#3d404c] cursor-pointer inline-flex items-center gap-2";
+      if (badge) badge.textContent = "INVENTORY PORTAL";
+      if (subtitle) subtitle.textContent = "Shopify Inventory & Tags Report";
+    }
   },
 
   switchTab(tab) {
@@ -703,12 +740,62 @@ const UIController = {
     }));
   },
 
+  setExportZipProgress(visible, percent = 0, label = "", startTime = null) {
+    const container = document.getElementById("exportZipProgressContainer");
+    if (!container) return;
+    if (!visible) {
+      container.classList.add("hidden");
+      return;
+    }
+    container.classList.remove("hidden");
+    document.getElementById("exportZipProgressBar").style.width = `${percent}%`;
+    document.getElementById("exportZipProgressPercent").textContent = `${percent}%`;
+    document.getElementById("exportZipProgressLabel").textContent = label || "Gerando ZIP...";
+
+    const etaBadge = document.getElementById("exportZipEtaBadge");
+    if (etaBadge) {
+      if (percent >= 100) {
+        etaBadge.textContent = "✓ Pronto!";
+      } else if (startTime && percent >= 4) {
+        const elapsedSec = (performance.now() - startTime) / 1000;
+        if (elapsedSec > 0.15) {
+          const totalEstSec = elapsedSec / (percent / 100);
+          const remSec = Math.max(1, Math.ceil(totalEstSec - elapsedSec));
+          if (remSec >= 60) {
+            const mins = Math.floor(remSec / 60);
+            const secs = remSec % 60;
+            etaBadge.textContent = `⏱️ Falta ~${mins}m ${secs}s`;
+          } else {
+            etaBadge.textContent = `⏱️ Falta ~${remSec}s`;
+          }
+        } else {
+          etaBadge.textContent = "⏱️ Calculando...";
+        }
+      } else {
+        etaBadge.textContent = "⏱️ Calculando...";
+      }
+    }
+  },
+
   async handleConfirmExport() {
+    const btn = document.getElementById("btnConfirmProcess");
+    const origBtnText = btn.innerHTML;
+    const startTime = performance.now();
     try {
-      this.setProgress(true, 20, "Gerando ZIP final...");
-      const res = await ZipProcessor.buildUnifiedExportZip(AppState.processingQueue, AppState.getConfig(), (p, msg) => this.setProgress(true, p, msg));
+      btn.disabled = true;
+      btn.innerHTML = "⏳ Gerando ZIP...";
+      this.setExportZipProgress(true, 2, "Iniciando empacotamento...", startTime);
+      await new Promise((r) => setTimeout(r, 20));
+
+      const res = await ZipProcessor.buildUnifiedExportZip(
+        AppState.processingQueue,
+        AppState.getConfig(),
+        (p, msg) => this.setExportZipProgress(true, p, msg, startTime)
+      );
       AppState.lastExportResult = res;
-      this.setProgress(false);
+      this.setExportZipProgress(true, 100, "ZIP finalizado com sucesso!", startTime);
+      setTimeout(() => this.setExportZipProgress(false), 1200);
+
       document.getElementById("finalReportSection").classList.remove("hidden");
       document.getElementById("reportSummaryGrid").innerHTML = `
         <div class="bg-[#faf7f1] border border-[#e2dac9] rounded-xl p-3.5"><div class="text-[11px] font-bold uppercase text-[#4a463d]">Arquivos Exportados</div><div class="text-2xl font-black text-[#15603e]">${AppState.processingQueue.filter(i => i.included && !i.autoExcluded).length}</div></div>
@@ -719,8 +806,11 @@ const UIController = {
       document.getElementById("reportLogContainer").innerHTML = res.integrityLogs.map(l => `<div><span class="text-[#15603e] font-bold">[OK CRC32:${l.crc32}]</span> ${l.fullZipPath}</div>`).join("");
       document.getElementById("finalReportSection").scrollIntoView({ behavior: "smooth" });
     } catch (e) {
-      this.setProgress(false);
+      this.setExportZipProgress(false);
       alert(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = origBtnText;
     }
   },
 
@@ -758,6 +848,315 @@ const UIController = {
     document.getElementById("removedFilesBox").classList.add("hidden");
     document.getElementById("finalReportSection").classList.add("hidden");
     window.syncHeaderBadgesImmediate();
+  },
+
+  // =========================================================================
+  // CONTROLADOR DO MÓDULO: RELATÓRIO DE ESTOQUE SHOPIFY (INVENTORY REPORT)
+  // =========================================================================
+  bindInventoryReportEvents() {
+    const invInput = document.getElementById("invInputInventoryFile");
+    const tagsInput = document.getElementById("invInputTagsFile");
+    const bothInput = document.getElementById("invFileBoth");
+
+    document.getElementById("btnInvPickInventory").addEventListener("click", () => {
+      invInput.value = "";
+      invInput.click();
+    });
+    invInput.addEventListener("change", (e) => {
+      if (e.target.files?.[0]) {
+        this.setInventoryReportFile("inventory", e.target.files[0]);
+      }
+    });
+
+    document.getElementById("btnInvPickTags").addEventListener("click", () => {
+      tagsInput.value = "";
+      tagsInput.click();
+    });
+    tagsInput.addEventListener("change", (e) => {
+      if (e.target.files?.[0]) {
+        this.setInventoryReportFile("tags", e.target.files[0]);
+      }
+    });
+
+    document.getElementById("btnInvSelectBoth").addEventListener("click", () => {
+      bothInput.value = "";
+      bothInput.click();
+    });
+    bothInput.addEventListener("change", (e) => {
+      if (e.target.files?.length > 0) {
+        this.assignMultipleInventoryFiles(e.target.files);
+      }
+    });
+
+    const dropzone = document.getElementById("invDropzoneBoth");
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("border-[#f3be4f]");
+    });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("border-[#f3be4f]"));
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("border-[#f3be4f]");
+      if (e.dataTransfer?.files?.length > 0) {
+        this.assignMultipleInventoryFiles(e.dataTransfer.files);
+      }
+    });
+
+    const thresholdInput = document.getElementById("invInputThreshold");
+    const syncThresholdBadge = () => {
+      const val = Math.max(0, parseInt(thresholdInput.value, 10) || 0);
+      thresholdInput.value = val;
+      const badge = document.getElementById("invHeaderBadgeThreshold");
+      if (badge) badge.textContent = `≤ ${val}`;
+    };
+
+    document.getElementById("btnInvThresholdMinus").addEventListener("click", () => {
+      const cur = parseInt(thresholdInput.value, 10) || 0;
+      thresholdInput.value = Math.max(0, cur - 1);
+      syncThresholdBadge();
+    });
+    document.getElementById("btnInvThresholdPlus").addEventListener("click", () => {
+      const cur = parseInt(thresholdInput.value, 10) || 0;
+      thresholdInput.value = Math.max(0, cur + 1);
+      syncThresholdBadge();
+    });
+    thresholdInput.addEventListener("input", syncThresholdBadge);
+    thresholdInput.addEventListener("change", syncThresholdBadge);
+
+    document.getElementById("btnInvGenerateReport").addEventListener("click", () => this.handleGenerateInventoryReport());
+    document.getElementById("btnInvResetAll").addEventListener("click", () => this.handleResetInventoryReport());
+    document.getElementById("btnInvDownloadAgain").addEventListener("click", () => this.triggerInventoryBlobDownload());
+
+    document.getElementById("invSearchTable").addEventListener("input", () => this.renderInventoryPreviewTable());
+    document.getElementById("invFilterRep").addEventListener("change", () => this.renderInventoryPreviewTable());
+    document.getElementById("invFilterSync").addEventListener("change", () => this.renderInventoryPreviewTable());
+  },
+
+  setInventoryReportFile(role, file) {
+    if (role === "inventory") {
+      AppState.invInventoryFile = file;
+      document.getElementById("invDisplayInventoryPath").value = file ? file.name : "";
+      const st = document.getElementById("invStatusInventoryFile");
+      st.textContent = file ? `✓ Carregado` : "Pendente";
+      st.className = file ? "text-[11px] font-bold text-[#15603e]" : "text-[11px] font-semibold text-[#4a463d]";
+    } else {
+      AppState.invTagsFile = file;
+      document.getElementById("invDisplayTagsPath").value = file ? file.name : "";
+      const st = document.getElementById("invStatusTagsFile");
+      st.textContent = file ? `✓ Carregado` : "Pendente";
+      st.className = file ? "text-[11px] font-bold text-[#15603e]" : "text-[11px] font-semibold text-[#4a463d]";
+    }
+    const bothBadge = document.getElementById("invBadgeBothStatus");
+    if (AppState.invInventoryFile && AppState.invTagsFile) {
+      bothBadge.classList.remove("hidden");
+    } else {
+      bothBadge.classList.add("hidden");
+    }
+  },
+
+  async assignMultipleInventoryFiles(fileList) {
+    const validFiles = Array.from(fileList || []).filter((f) => /\.(csv|xlsx|xls)$/i.test(f.name));
+    if (validFiles.length === 0) {
+      return alert("Selecione planilhas válidas nos formatos .csv, .xlsx ou .xls.");
+    }
+
+    if (validFiles.length === 1) {
+      const f = validFiles[0];
+      try {
+        const parsed = await InventoryReportEngine.readAnyFile(f);
+        if (parsed.columns.includes(InventoryReportEngine.QTY_COLUMN)) {
+          this.setInventoryReportFile("inventory", f);
+        } else if (parsed.columns.includes("Tags")) {
+          this.setInventoryReportFile("tags", f);
+        } else if (/product|tag/i.test(f.name)) {
+          this.setInventoryReportFile("tags", f);
+        } else {
+          this.setInventoryReportFile("inventory", f);
+        }
+      } catch (_) {
+        if (/product|tag/i.test(f.name)) this.setInventoryReportFile("tags", f);
+        else this.setInventoryReportFile("inventory", f);
+      }
+      return;
+    }
+
+    let invCandidate = null;
+    let tagsCandidate = null;
+    const remaining = [];
+
+    for (const f of validFiles) {
+      try {
+        const parsed = await InventoryReportEngine.readAnyFile(f);
+        if (!invCandidate && parsed.columns.includes(InventoryReportEngine.QTY_COLUMN)) {
+          invCandidate = f;
+        } else if (!tagsCandidate && parsed.columns.includes("Tags")) {
+          tagsCandidate = f;
+        } else {
+          remaining.push(f);
+        }
+      } catch (_) {
+        remaining.push(f);
+      }
+    }
+
+    for (const f of remaining) {
+      const lower = f.name.toLowerCase();
+      if (!invCandidate && (lower.includes("inventory") || lower.includes("estoque"))) {
+        invCandidate = f;
+      } else if (!tagsCandidate && (lower.includes("product") || lower.includes("tag"))) {
+        tagsCandidate = f;
+      } else if (!invCandidate) {
+        invCandidate = f;
+      } else if (!tagsCandidate) {
+        tagsCandidate = f;
+      }
+    }
+
+    if (invCandidate) this.setInventoryReportFile("inventory", invCandidate);
+    if (tagsCandidate) this.setInventoryReportFile("tags", tagsCandidate);
+  },
+
+  async handleGenerateInventoryReport() {
+    if (!AppState.invInventoryFile || !AppState.invTagsFile) {
+      alert("Selecione os dois relatórios antes de continuar.");
+      return;
+    }
+
+    const btn = document.getElementById("btnInvGenerateReport");
+    const origText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<span>⏳ Processando...</span>`;
+
+    try {
+      const thresholdVal = Math.max(0, parseInt(document.getElementById("invInputThreshold").value, 10) || 0);
+      const incomingText = document.getElementById("invIncomingTextarea").value || "";
+
+      const result = await InventoryReportEngine.processFiles(
+        AppState.invInventoryFile,
+        AppState.invTagsFile,
+        thresholdVal,
+        incomingText
+      );
+
+      const blob = await InventoryReportEngine.buildWorkbookBlob(result.rows);
+      const stem = AppState.invInventoryFile.name.replace(/\.[^/.]+$/, "");
+      const outFilename = `relatorio_estoque_${stem}.xlsx`;
+
+      AppState.invLastRows = result.rows;
+      AppState.invLastBlob = blob;
+      AppState.invLastFilename = outFilename;
+
+      // Atualiza os KPIs e a tabela de preview
+      document.getElementById("invMetricFinalCount").textContent = result.stats.finalCount;
+      document.getElementById("invMetricSyncYes").textContent = result.stats.syncYesCount;
+      document.getElementById("invMetricSyncNo").textContent = result.stats.syncNoCount;
+      document.getElementById("invMetricExcludedRules").textContent = result.stats.excludedByRuleCount;
+      document.getElementById("invMetricExcludedIncoming").textContent = result.stats.excludedByIncomingCount;
+      document.getElementById("invMetricExcludedQty").textContent = result.stats.excludedByQtyCount;
+
+      document.getElementById("invStatusHeadline").textContent = `✅ Pronto! ${result.rows.length} produtos no relatório final.`;
+      document.getElementById("invStatusFilename").textContent = `Arquivo gerado: ${outFilename}`;
+      document.getElementById("invStatusBanner").classList.remove("hidden");
+      document.getElementById("invPreviewSection").classList.remove("hidden");
+
+      this.renderInventoryPreviewTable();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      this.triggerInventoryBlobDownload();
+    } catch (err) {
+      console.error(err);
+      alert(`Erro ao processar:\n${err.message || err}`);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = origText;
+    }
+  },
+
+  triggerInventoryBlobDownload() {
+    if (!AppState.invLastBlob) return;
+    const url = URL.createObjectURL(AppState.invLastBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = AppState.invLastFilename || "relatorio_estoque.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  },
+
+  renderInventoryPreviewTable() {
+    const tbody = document.getElementById("invPreviewTableBody");
+    const search = (document.getElementById("invSearchTable").value || "").trim().toLowerCase();
+    const repFilter = document.getElementById("invFilterRep").value;
+    const syncFilter = document.getElementById("invFilterSync").value;
+
+    const filtered = AppState.invLastRows.filter((row) => {
+      if (repFilter !== "ALL") {
+        if (repFilter === "NONE" && row["Sales Rep"]) return false;
+        if (repFilter !== "NONE" && row["Sales Rep"] !== repFilter) return false;
+      }
+      if (syncFilter !== "ALL" && row["Registered in the APP Inv Sync"] !== syncFilter) {
+        return false;
+      }
+      if (search) {
+        const hay = `${row["Title"]} ${row["Tags"]} ${row["Sales Rep"] || ""}`.toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+
+    const escapeHtml = (str) =>
+      String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+    const darkTextReps = new Set(["Tony", "Brandon", "Gomes", "Victor", "Rossina"]);
+
+    tbody.innerHTML = filtered
+      .map((row) => {
+        const rep = row["Sales Rep"];
+        const repHex = rep && InventoryReportEngine.REP_COLORS[rep] ? `#${InventoryReportEngine.REP_COLORS[rep]}` : "";
+        const repTextColor = rep && !darkTextReps.has(rep) ? "#ffffff" : "#17181c";
+        const status = row["Registered in the APP Inv Sync"];
+        const statusHex = `#${InventoryReportEngine.STATUS_COLORS[status] || "FFFFFF"}`;
+
+        return `
+          <tr class="hover:bg-[#faf7f1] transition">
+            <td class="py-2.5 px-4 font-medium text-[#17181c] border-r border-[#efe9dc]">${escapeHtml(row["Title"])}</td>
+            <td class="py-2.5 px-4 font-mono text-[11px] border-r border-[#efe9dc]" style="${repHex ? `background-color: ${repHex}; color: ${repTextColor};` : "color: #17181c;"}">
+              <div class="flex items-center justify-between gap-2">
+                <span class="break-words">${escapeHtml(row["Tags"])}</span>
+                ${rep ? `<span class="px-2 py-0.5 rounded bg-black/20 text-[10px] font-bold uppercase shrink-0">${escapeHtml(rep)}</span>` : ""}
+              </div>
+            </td>
+            <td class="py-2.5 px-4 font-mono font-bold text-center text-[#17181c] border-r border-[#efe9dc]">${row["Variant Inventory Qty"]}</td>
+            <td class="py-2.5 px-4 font-mono font-extrabold text-center text-[#17181c]" style="background-color: ${statusHex};">${status}</td>
+          </tr>
+        `;
+      })
+      .join("");
+  },
+
+  handleResetInventoryReport() {
+    AppState.invInventoryFile = null;
+    AppState.invTagsFile = null;
+    AppState.invLastRows = [];
+    AppState.invLastBlob = null;
+    document.getElementById("invInputInventoryFile").value = "";
+    document.getElementById("invInputTagsFile").value = "";
+    document.getElementById("invFileBoth").value = "";
+    document.getElementById("invDisplayInventoryPath").value = "";
+    document.getElementById("invDisplayTagsPath").value = "";
+    document.getElementById("invStatusInventoryFile").textContent = "Pendente";
+    document.getElementById("invStatusInventoryFile").className = "text-[11px] font-semibold text-[#4a463d]";
+    document.getElementById("invStatusTagsFile").textContent = "Pendente";
+    document.getElementById("invStatusTagsFile").className = "text-[11px] font-semibold text-[#4a463d]";
+    document.getElementById("invBadgeBothStatus").classList.add("hidden");
+    document.getElementById("invInputThreshold").value = InventoryReportEngine.QTY_THRESHOLD;
+    document.getElementById("invHeaderBadgeThreshold").textContent = `≤ ${InventoryReportEngine.QTY_THRESHOLD}`;
+    document.getElementById("invIncomingTextarea").value = "";
+    document.getElementById("invStatusBanner").classList.add("hidden");
+    document.getElementById("invPreviewSection").classList.add("hidden");
   }
 };
 
