@@ -1,0 +1,57 @@
+{
+  "name": "BP-Organizer",
+  "version": "1.0.1",
+  "description": "Break Point - Folder Organizer",
+  "author": "Break Point",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win --x64",
+    "publish": "electron-builder --win --x64 --publish always"
+  },
+  "build": {
+    "appId": "com.breakpoint.organizer",
+    "productName": "Break Point Folder Organizer",
+    "directories": {
+      "output": "instalador"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Joao7001",
+        "repo": "BreakPointFolderOrganizer"
+      }
+    ],
+    "files": [
+      "index.html",
+      "main.js",
+      "src/**/*",
+      "favicon.png",
+      "icon.ico",
+      "package.json"
+    ],
+    "win": {
+      "icon": "icon.ico",
+      "signAndEditExecutable": true,
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Break Point Folder Organizer"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
+  }
+}

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Break Point Folder Organizer</title>
+  <!-- Favicon SVG Oficial Embutido -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23000000'/%3E%3Crect x='10' y='10' width='180' height='180' fill='%23ffffff'/%3E%3Cpath fill='%23000000' fill-rule='evenodd' d='M75 48 H132 C162 48 179 61 179 79 C179 97 162 109 132 109 H125 V138 C125 146 130 149 140 150 V152 H75 C42 152 21 139 21 122 C21 108 32 99 47 96 C34 93 26 84 26 72 C26 57 44 48 75 48 Z M81 55 H68 C50 55 42 62 42 73 C42 84 51 92 69 92 H81 V55 Z M81 101 H67 C48 101 39 109 39 122 C39 136 49 144 68 144 H81 V101 Z M97 58 C97 53 100 51 103 51 C106 51 109 53 109 58 V142 C109 147 106 149 103 149 C100 149 97 147 97 142 Z M125 55 V101 H133 C152 101 162 93 162 78 C162 63 152 55 133 55 H125 Z'/%3E%3C/svg%3E" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/css/styles.css" />
+</head>
+<body class="min-h-screen flex flex-col bg-[#faf7f1] text-[#17181c]">
+
+  <!-- Top Header Limpo -->
+  <header class="bg-[#17181c] text-[#faf7f1] border-b border-[#2d2e35] sticky top-0 z-30 shadow-md">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <svg class="w-10 h-10 rounded-sm shrink-0 shadow-sm" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Break Point Logo">
+          <rect width="200" height="200" fill="#ffffff"/>
+          <rect x="8" y="8" width="184" height="184" fill="#000000"/>
+          <path fill="#ffffff" fill-rule="evenodd" d="M75 48 H132 C162 48 179 61 179 79 C179 97 162 109 132 109 H125 V138 C125 146 130 149 140 150 V152 H75 C42 152 21 139 21 122 C21 108 32 99 47 96 C34 93 26 84 26 72 C26 57 44 48 75 48 Z M81 55 H68 C50 55 42 62 42 73 C42 84 51 92 69 92 H81 V55 Z M81 101 H67 C48 101 39 109 39 122 C39 136 49 144 68 144 H81 V101 Z M97 58 C97 53 100 51 103 51 C106 51 109 53 109 58 V142 C109 147 106 149 103 149 C100 149 97 147 97 142 Z M125 55 V101 H133 C152 101 162 93 162 78 C162 63 152 55 133 55 H125 Z"/>
+        </svg>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <span class="font-black text-base sm:text-lg tracking-wider uppercase text-[#faf7f1]">BREAK POINT</span>
+          <span class="text-[11px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border border-[#d49b27]/60 text-[#f3be4f] bg-[#d49b27]/10">
+            SETUP PORTAL
+          </span>
+          <span class="hidden md:inline-block text-xs text-[#a09c93] pl-1">
+            Print Files & Mockup Organizer
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 flex-1 space-y-6">
+
+    <!-- Title Banner Unificado com os Botões SETUP e MY STORE ao lado do título -->
+    <div class="flex flex-wrap items-end justify-between gap-4 border-b border-[#e2dac9] pb-4">
+      <div class="flex flex-wrap items-center gap-4">
+        <div>
+          <div class="text-[11px] font-bold uppercase tracking-widest text-[#4a463d]">PRODUCTION · PRINT FILES & MOCKUPS</div>
+          <div class="flex flex-wrap items-center gap-3 mt-0.5">
+            <h1 id="mainPageHeading" class="text-2xl sm:text-3xl bp-heading uppercase text-[#17181c]">DESIGN FILE SETUP</h1>
+            <div class="inline-flex items-center gap-2 ml-1">
+              <button id="btnTabWorkflow" type="button" class="px-4 py-2 rounded-lg bg-[#17181c] text-[#faf7f1] text-xs font-black uppercase tracking-wider transition shadow-sm border-2 border-[#17181c] cursor-pointer">
+                SETUP
+              </button>
+              <button id="btnTabMystore" type="button" class="px-4 py-2 rounded-lg bg-[#f2ece1] hover:bg-[#e5dec9] text-[#4a463d] text-xs font-black uppercase tracking-wider transition border-2 border-[#cfc6b4] cursor-pointer">
+                MY STORE
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="px-3 py-1.5 rounded-lg bg-[#f2ece1] border border-[#dcd3c0] text-xs flex items-center gap-2">
+          <span class="text-[#4a463d] font-medium">Design Principal:</span>
+          <span id="previewPrefixBadge" class="font-mono font-bold text-[#17181c] bg-white px-2 py-0.5 rounded border border-[#dcd3c0]">#--- -</span>
+        </div>
+        <div id="previewZipUpBadge" class="px-3 py-1.5 rounded-lg bg-[#17181c] text-[#faf7f1] text-xs flex items-center gap-2">
+          <span class="text-[#d49b27] font-semibold">Zip Up Separada:</span>
+          <span id="previewZipUpText" class="font-mono font-bold">#--- -</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: SETUP (WORKFLOW) -->
+    <section id="viewWorkflow" class="space-y-6">
+
+      <!-- Step 1: Configuration & Upload -->
+      <div class="bg-white border border-[#e2dac9] rounded-xl p-5 sm:p-6 shadow-sm space-y-5">
+        <div class="border-b border-[#efe9dc] pb-3">
+          <h2 class="text-sm font-extrabold uppercase tracking-wider text-[#17181c]">1 · CONFIGURAÇÃO DO DESIGN & IMPORTAÇÃO DOS ZIPS</h2>
+          <p class="text-xs text-[#4a463d] mt-0.5">
+            Selecione <strong>Centered</strong> (separa Zip Up com letra própria) ou <strong>Pocket</strong> (coloca os mockups de Zip Up nas mesmas pastas e letra da Topwear, compartilhando o mesmo Final File).
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="inputDesignNumber">Customer / Design # *</label>
+            <input id="inputDesignNumber" type="text" value="" placeholder="Ex: 980" oninput="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3.5 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] placeholder-[#9ca3af] text-sm font-mono font-bold focus:border-[#17181c] focus:bg-white focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="inputDesignLetter">Design Letter *</label>
+            <input id="inputDesignLetter" type="text" value="" maxlength="5" placeholder="EX: L" oninput="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3.5 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] placeholder-[#9ca3af] text-sm font-mono font-bold uppercase focus:border-[#17181c] focus:bg-white focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="selectTopwearType">Posição da Logo (Topwear) *</label>
+            <select id="selectTopwearType" onchange="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] text-xs font-bold focus:border-[#17181c] focus:bg-white focus:outline-none">
+              <option value="Centered" selected>Centered (Separa Zip Up em # Letra B)</option>
+              <option value="Pocket">Pocket (Zip Up junta na mesma letra + mesmo Final File)</option>
+            </select>
+          </div>
+
+          <div id="containerZipUpLetter">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#785212] mb-1.5" for="inputZipUpLetter">Zip Up Letter (Quando Centered) *</label>
+            <input id="inputZipUpLetter" type="text" value="" maxlength="5" placeholder="EX: B" oninput="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3.5 rounded-lg bg-[#fdf4dc] border border-[#d49b27] text-[#17181c] placeholder-[#a8997c] text-sm font-mono font-bold uppercase focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="inputDefaultAcademy">Academia Padrão (Fallback)</label>
+            <input id="inputDefaultAcademy" type="text" value="" placeholder="Ex: Goldbar Jiu-Jitsu" class="w-full h-10 px-3.5 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] placeholder-[#9ca3af] text-sm font-medium focus:border-[#17181c] focus:bg-white focus:outline-none" />
+          </div>
+        </div>
+
+        <!-- Barra Escura de Importação Dupla -->
+        <div id="dropzoneBothZips" class="bg-[#17181c] text-[#faf7f1] rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 border-2 border-transparent transition">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-bold uppercase tracking-widest text-[#f3be4f]">IMPORTAÇÃO UNIFICADA · MOCKUPS + FINAL FILES</span>
+              <span id="badgeBothZipsStatus" class="hidden px-2 py-0.5 rounded bg-[#1b7a4e] text-white text-[10px] font-bold">✓ Carregados</span>
+            </div>
+            <div class="text-sm font-bold text-white mt-0.5">
+              Selecione os dois arquivos ZIP juntos na mesma janela (ou arraste os 2 ZIPs para cá)
+            </div>
+          </div>
+          <div class="shrink-0">
+            <input id="fileBothZips" type="file" accept=".zip,application/zip,application/x-zip-compressed" multiple class="hidden" />
+            <button id="btnSelectBothZips" type="button" class="px-5 py-3 rounded-lg bg-[#faf7f1] hover:bg-[#f3be4f] text-[#17181c] font-black text-xs uppercase tracking-wider transition shadow-lg cursor-pointer inline-flex items-center gap-2">
+              <span>📦 Selecionar os Dois ZIPs Juntos</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Seletores Individuais -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="border border-[#d8d0be] rounded-xl p-4 bg-[#faf7f1] flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-[#17181c]">ZIP 1 · MOCKUPS</span>
+              <span id="statusMockupZip" class="text-xs font-medium text-[#4a463d]">Nenhum arquivo selecionado</span>
+            </div>
+            <input id="fileMockupZip" type="file" accept=".zip,application/zip,application/x-zip-compressed" class="block w-full text-xs text-[#4a463d] file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#17181c] file:text-[#faf7f1] hover:file:bg-[#2c2e36] cursor-pointer" />
+          </div>
+
+          <div class="border border-[#d8d0be] rounded-xl p-4 bg-[#faf7f1] flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-[#17181c]">ZIP 2 · FINAL FILES</span>
+              <span id="statusFinalZip" class="text-xs font-medium text-[#4a463d]">Nenhum arquivo selecionado</span>
+            </div>
+            <input id="fileFinalZip" type="file" accept=".zip,application/zip,application/x-zip-compressed" class="block w-full text-xs text-[#4a463d] file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#17181c] file:text-[#faf7f1] hover:file:bg-[#2c2e36] cursor-pointer" />
+          </div>
+        </div>
+
+        <!-- Botões de Ação e Barra de Progresso -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pt-1">
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="btnAnalyze" type="button" class="px-5 py-2.5 rounded-lg bg-[#17181c] hover:bg-[#2c2e36] text-[#faf7f1] font-bold text-xs sm:text-sm shadow transition cursor-pointer">
+              🔍 Analisar e Organizar Arquivos
+            </button>
+            <button id="btnCancelOp" type="button" class="hidden px-4 py-2.5 rounded-lg bg-[#bf2626] hover:bg-[#a31f1f] text-white font-bold text-xs transition cursor-pointer">
+              ✖ Cancelar
+            </button>
+            <button id="btnResetAll" type="button" class="px-4 py-2.5 rounded-lg bg-[#f2ece1] hover:bg-[#e5dec9] text-[#4a463d] font-bold text-xs border border-[#d8d0be] transition cursor-pointer">
+              Limpar Tudo
+            </button>
+          </div>
+
+          <div id="progressContainer" class="hidden flex-1 min-w-[260px] max-w-md bg-[#faf7f1] border border-[#d8d0be] rounded-lg p-3">
+            <div class="flex justify-between text-xs mb-1.5">
+              <span id="progressLabel" class="text-[#17181c] font-semibold">Processando...</span>
+              <span id="progressPercent" class="text-[#1b7a4e] font-mono font-bold">0%</span>
+            </div>
+            <div class="w-full h-2 bg-[#e5dec9] rounded-full overflow-hidden">
+              <div id="progressBar" class="h-full bg-[#1b7a4e] transition-all duration-150" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Caixa de Atenção -->
+      <div id="attentionBox" class="hidden bg-[#fce8e6] border-2 border-[#bf2626] rounded-xl p-5 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#f5c2be] pb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="px-2.5 py-1 rounded bg-[#bf2626] text-white font-black text-xs uppercase">ATENÇÃO · REVISÃO NECESSÁRIA</span>
+            <h3 class="text-sm font-extrabold text-[#7f1d1d]">Clique na miniatura do produto para ampliar ou escolha a pasta ao lado</h3>
+          </div>
+          <span id="attentionCountBadge" class="text-xs font-mono font-bold px-2.5 py-1 rounded bg-white text-[#bf2626] border border-[#f5c2be]">0 pendentes</span>
+        </div>
+        <div id="attentionList" class="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-1"></div>
+      </div>
+
+      <!-- Step 2.5: Caixa de Removidos Automaticamente -->
+      <div id="removedFilesBox" class="hidden bg-white border border-[#e2dac9] rounded-xl p-5 shadow-sm space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#efe9dc] pb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="px-2.5 py-1 rounded bg-[#f6ebd1] text-[#785212] border border-[#e5d1a7] font-bold text-xs">🗑️ REMOVIDOS AUTOMATICAMENTE</span>
+            <h3 class="text-sm font-extrabold text-[#17181c]">Mockup Thumbnails Multi-cor & Gi / Belt Patches Excluídos</h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="removedCountBadge" class="text-xs font-mono font-bold px-2.5 py-1 rounded bg-[#f2ece1] text-[#4a463d]">0 removidos</span>
+            <button id="btnRestoreAllExcluded" type="button" class="px-3 py-1.5 rounded-lg bg-[#17181c] hover:bg-[#2c2e36] text-white text-xs font-bold transition cursor-pointer">
+              Restaurar Todos (Exceto Patches)
+            </button>
+          </div>
+        </div>
+        <div id="removedFilesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto custom-scroll pr-1"></div>
+      </div>
+
+      <!-- Step 3: Pré-visualização e Tabela Alinhada -->
+      <div id="previewSection" class="hidden space-y-6">
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="metricTotalItems" class="text-2xl font-black text-[#17181c]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">ARQUIVOS ATIVOS NO ZIP</div>
+          </div>
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="metricActiveFolders" class="text-2xl font-black text-[#1b7a4e]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">PASTAS CRIADAS</div>
+          </div>
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="metricMockups" class="text-2xl font-black text-[#1e40af]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">IN MOCKUPS</div>
+          </div>
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="metricFinalFiles" class="text-2xl font-black text-[#15603e]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">IN FINAL FILES</div>
+          </div>
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="metricAutoRemoved" class="text-2xl font-black text-[#b45309]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">THUMBNAILS REMOVIDOS</div>
+          </div>
+          <div class="bg-white border border-[#e2dac9] rounded-xl p-3.5 shadow-sm">
+            <div id="metricNeedsReview" class="text-2xl font-black text-[#bf2626]">0</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-[#4a463d] mt-0.5">PENDENTES DE REVISÃO</div>
+          </div>
+        </div>
+
+        <!-- Árvore de Pastas -->
+        <div class="bg-white border border-[#e2dac9] rounded-xl p-5 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#efe9dc] pb-3">
+            <div>
+              <h3 class="text-sm font-extrabold uppercase tracking-wider text-[#17181c]">📂 ESTRUTURA DE PASTAS QUE SERÁ GERADA NO ZIP</h3>
+              <p id="folderTreeSubtitle" class="text-xs text-[#15603e] font-semibold mt-0.5"></p>
+            </div>
+            <label class="flex items-center gap-2 text-xs text-[#4a463d] font-medium cursor-pointer">
+              <input id="chkShowEmptyFolders" type="checkbox" class="w-4 h-4 rounded border-[#4a463d] text-[#17181c]" />
+              <span>Mostrar pastas vazias de categorias não enviadas</span>
+            </label>
+          </div>
+          <div id="unifiedTreeContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[440px] overflow-y-auto custom-scroll pr-1"></div>
+        </div>
+
+        <!-- Tabela de Revisão Alinhada -->
+        <div class="bg-white border border-[#e2dac9] rounded-xl shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-[#e2dac9] bg-[#faf7f1] flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-extrabold uppercase tracking-wider text-[#17181c]">2 · REVISÃO DETALHADA E TROCA RÁPIDA DE PASTA COM PREVIEW</h3>
+              <p class="text-xs text-[#4a463d] mt-0.5">
+                Clique diretamente sobre a imagem de qualquer produto para abrir o preview ampliado.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5">
+              <input id="inputSearchTable" type="text" placeholder="Pesquisar arquivo, cor ou pasta..." class="w-64 h-9 px-3.5 rounded-lg bg-white border border-[#cfc6b4] text-xs text-[#17181c] font-medium focus:border-[#17181c] focus:outline-none" />
+              <select id="selectFilterStatus" class="h-9 px-3.5 rounded-lg bg-white border border-[#cfc6b4] text-xs font-bold text-[#17181c] focus:border-[#17181c] focus:outline-none">
+                <option value="ACTIVE">Somente Arquivos Ativos</option>
+                <option value="ALL">Todos (Incluindo Removidos)</option>
+                <option value="REVIEW">Somente com Alerta / Revisão</option>
+                <option value="REMOVED">Somente Removidos (Thumbnails / Patches)</option>
+                <option value="MOCKUP">Somente Mockups</option>
+                <option value="FINAL">Somente Final Files</option>
+                <option value="ZIPUP">Somente Zip Up</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto custom-scroll max-h-[580px]">
+            <table class="w-full text-left border-collapse table-fixed min-w-[960px]">
+              <thead class="bg-[#f2ece1] border-b-2 border-[#dfd7c6] sticky top-0 z-20 shadow-sm">
+                <tr class="text-[11px] font-extrabold uppercase tracking-wider text-[#4a463d]">
+                  <th class="py-3 px-4 w-[84px]">Produto</th>
+                  <th class="py-3 px-4 w-[39%]">Arquivo Original & Nome Final Editável</th>
+                  <th class="py-3 px-4 w-[35%]">Pasta Oficial de Destino</th>
+                  <th class="py-3 px-4 w-[13%]">Status</th>
+                  <th class="py-3 px-4 text-right w-[110px]">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="previewTableBody" class="divide-y divide-[#efe9dc] text-xs bg-white"></tbody>
+            </table>
+          </div>
+
+          <div class="p-5 bg-[#f2ece1] border-t border-[#dfd7c6] flex flex-wrap items-center justify-between gap-4">
+            <div class="text-xs text-[#4a463d] font-medium">
+              Integridade binária 100% preservada (CRC32).
+            </div>
+            <button id="btnConfirmProcess" type="button" class="px-6 py-3 rounded-lg bg-[#17181c] hover:bg-[#2c2e36] text-[#faf7f1] font-black text-xs sm:text-sm uppercase tracking-wider shadow-md transition cursor-pointer">
+              ✅ Confirmar e Gerar ZIP Organizado
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Relatório Final & Download -->
+      <div id="finalReportSection" class="hidden bg-white border-2 border-[#1b7a4e] rounded-xl p-6 shadow-md space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-[#efe9dc] pb-4">
+          <div>
+            <span class="px-2.5 py-1 rounded bg-[#e3f3eb] text-[#15603e] font-extrabold text-xs uppercase border border-[#b7e1cd]">
+              COMPLETE · PRONTO PARA O GOOGLE DRIVE
+            </span>
+            <h2 class="text-xl bp-heading uppercase text-[#17181c] mt-2">3 · RELATÓRIO FINAL & DOWNLOAD DO PACOTE</h2>
+          </div>
+          <button id="btnDownloadUnifiedZip" type="button" class="px-6 py-3.5 rounded-lg bg-[#1b7a4e] hover:bg-[#15603e] text-white font-black text-sm shadow-md transition cursor-pointer">
+            ⬇️ Baixar ZIP Organizado Agora
+          </button>
+        </div>
+        <div id="reportSummaryGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+        <div class="bg-[#faf7f1] border border-[#e2dac9] rounded-lg p-4">
+          <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-[#4a463d] mb-2">Log de Integridade Binária (CRC32) & Caminhos Criados</h4>
+          <div id="reportLogContainer" class="text-xs font-mono text-[#17181c] space-y-1 max-h-56 overflow-y-auto custom-scroll"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 2: MY STORE (ATUALIZAÇÃO INTELIGENTE DE LOJA) -->
+    <section id="viewMystore" class="hidden space-y-6">
+      <div class="bg-white border border-[#e2dac9] rounded-xl p-5 sm:p-6 space-y-5 shadow-sm">
+        <div class="border-b border-[#efe9dc] pb-3">
+          <span class="px-2.5 py-1 rounded bg-[#d49b27]/20 text-[#a2690e] font-extrabold text-[10px] uppercase tracking-wider">MÓDULO MY STORE</span>
+          <h2 class="text-sm font-extrabold uppercase tracking-wider text-[#17181c] mt-1">1 · ATUALIZAÇÃO DE PASTA DO CLIENTE & SUBSTITUIÇÃO INTELIGENTE DE MOCKUPS</h2>
+          <p class="text-xs text-[#4a463d] mt-0.5">
+            Envie a pasta ZIP pronta do cliente e o ZIP com os novos mockups. O sistema atualiza o <strong>#Número Letra</strong> antigo pelo novo (respeitando <strong>Centered</strong> ou <strong>Pocket</strong>), verifica quais mockups estão no ZIP novo e substitui apenas os necessários (ou todos, se for cliente antigo).
+          </p>
+        </div>
+
+        <!-- Campos de Configuração da My Store -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="mystoreOldPrefix">Prefixo Antigo (Opcional / Auto)</label>
+            <input id="mystoreOldPrefix" type="text" value="" placeholder="Ex: #1929 A (ou automático)" class="w-full h-10 px-3.5 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] placeholder-[#9ca3af] font-mono text-xs font-bold focus:border-[#17181c] focus:bg-white focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="mystoreNewNumber">Novo Customer / Design # *</label>
+            <input id="mystoreNewNumber" type="text" value="" placeholder="Ex: 980" oninput="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3.5 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] placeholder-[#9ca3af] font-mono text-sm font-bold focus:border-[#17181c] focus:bg-white focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="mystoreNewLetter">Nova Design Letter *</label>
+            <input id="mystoreNewLetter" type="text" value="" maxlength="5" placeholder="EX: L" oninput="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3.5 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] placeholder-[#9ca3af] font-mono text-sm font-bold uppercase focus:border-[#17181c] focus:bg-white focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="mystoreSelectTopwearType">Posição da Logo (Topwear) *</label>
+            <select id="mystoreSelectTopwearType" onchange="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] text-xs font-bold focus:border-[#17181c] focus:bg-white focus:outline-none">
+              <option value="Centered" selected>Centered (Separa Zip Up em # Letra B)</option>
+              <option value="Pocket">Pocket (Zip Up junta na mesma letra + mesmo Final File)</option>
+            </select>
+          </div>
+
+          <div id="mystoreContainerZipUpLetter">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#785212] mb-1.5" for="mystoreZipUpLetter">Nova Zip Up Letter (Centered) *</label>
+            <input id="mystoreZipUpLetter" type="text" value="" maxlength="5" placeholder="EX: B" oninput="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3.5 rounded-lg bg-[#fdf4dc] border border-[#d49b27] text-[#17181c] placeholder-[#a8997c] font-mono text-sm font-bold uppercase focus:outline-none" />
+          </div>
+        </div>
+
+        <!-- Modo de Substituição de Mockups (Cliente Novo vs. Cliente Antigo) -->
+        <div class="bg-[#f9f5eb] border border-[#dfd7c6] rounded-lg p-3.5 grid grid-cols-1 md:grid-cols-2 gap-4 items-center text-xs text-[#17181c]">
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1" for="mystoreReplaceMode">Modo de Verificação dos Mockups da Pasta do Cliente:</label>
+            <select id="mystoreReplaceMode" class="w-full h-9 px-3 rounded-lg bg-white border border-[#cfc6b4] text-[#17181c] text-xs font-bold focus:border-[#17181c] focus:outline-none">
+              <option value="SMART_MATCH" selected>🔍 Verificação Inteligente (Deleta e substitui apenas os mockups presentes no ZIP Novo; mantém os demais já no padrão)</option>
+              <option value="DELETE_ALL_OLD">🗑️ Cliente Antigo (Deletar 100% dos mockups antigos da pasta e colocar somente os do ZIP Novo)</option>
+            </select>
+          </div>
+          <div class="text-xs text-[#4a463d] space-y-1">
+            <div>✓ <strong>Cliente Novo:</strong> Mantém os mockups da pasta original que já seguem o modelo My Store (atualizando o <code>#Número Letra</code>) e substitui apenas os produtos que vierem no ZIP 2.</div>
+            <div>✓ <strong>Cliente Antigo:</strong> Remove todos os mockups antigos e aplica os novos.</div>
+          </div>
+        </div>
+
+        <!-- Barra Escura de Importação Dupla para My Store -->
+        <div id="mystoreDropzoneBoth" class="bg-[#17181c] text-[#faf7f1] rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 border-2 border-transparent transition">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-bold uppercase tracking-widest text-[#f3be4f]">IMPORTAÇÃO UNIFICADA MY STORE · PASTA DO CLIENTE + NOVOS MOCKUPS</span>
+              <span id="mystoreBadgeBothStatus" class="hidden px-2 py-0.5 rounded bg-[#1b7a4e] text-white text-[10px] font-bold">✓ Carregados</span>
+            </div>
+            <div class="text-sm font-bold text-white mt-0.5">
+              Selecione os 2 ZIPs juntos (Pasta Pronta do Cliente + Novos Mockups) ou arraste para cá
+            </div>
+          </div>
+          <div class="shrink-0">
+            <input id="mystoreFileBothZips" type="file" accept=".zip,application/zip,application/x-zip-compressed" multiple class="hidden" />
+            <button id="btnMystoreSelectBoth" type="button" class="px-5 py-3 rounded-lg bg-[#faf7f1] hover:bg-[#f3be4f] text-[#17181c] font-black text-xs uppercase tracking-wider transition shadow-lg cursor-pointer inline-flex items-center gap-2">
+              <span>📦 Selecionar os Dois ZIPs Juntos</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Seletores Individuais My Store -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="border border-[#d8d0be] rounded-xl p-4 bg-[#faf7f1] flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-extrabold uppercase text-[#17181c]">ZIP 1 · PASTA PRONTA DO CLIENTE (COM #NÚMERO ANTIGO)</span>
+              <span id="mystoreStatusOldZip" class="text-xs font-medium text-[#4a463d]">Nenhum arquivo selecionado</span>
+            </div>
+            <input id="mystoreFileOldZip" type="file" accept=".zip,application/zip,application/x-zip-compressed" class="block w-full text-xs text-[#4a463d] file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#17181c] file:text-[#faf7f1] hover:file:bg-[#2c2e36] cursor-pointer" />
+          </div>
+
+          <div class="border border-[#d8d0be] rounded-xl p-4 bg-[#faf7f1] flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-extrabold uppercase text-[#17181c]">ZIP 2 · NOVOS MOCKUPS (PARA SUBSTITUIR)</span>
+              <span id="mystoreStatusNewMockupsZip" class="text-xs font-medium text-[#4a463d]">Nenhum arquivo selecionado</span>
+            </div>
+            <input id="mystoreFileNewMockupsZip" type="file" accept=".zip,application/zip,application/x-zip-compressed" class="block w-full text-xs text-[#4a463d] file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#17181c] file:text-[#faf7f1] hover:file:bg-[#2c2e36] cursor-pointer" />
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-4 pt-1">
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="btnMystoreProcess" type="button" class="px-6 py-3 rounded-lg bg-[#17181c] hover:bg-[#2c2e36] text-[#faf7f1] font-black text-xs sm:text-sm uppercase tracking-wider shadow transition cursor-pointer">
+              🔄 Verificar Mockups e Atualizar Pasta My Store
+            </button>
+            <button id="btnMystoreReset" type="button" class="px-4 py-2.5 rounded-lg bg-[#f2ece1] hover:bg-[#e5dec9] text-[#4a463d] font-bold text-xs border border-[#d8d0be] transition cursor-pointer">
+              Limpar Tudo
+            </button>
+          </div>
+        </div>
+
+        <!-- Resultado Detalhado da Atualização My Store -->
+        <div id="mystoreResultSection" class="hidden border-t-2 border-[#1b7a4e] pt-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <span class="px-2.5 py-1 rounded bg-[#e3f3eb] text-[#15603e] font-extrabold text-xs uppercase border border-[#b7e1cd]">
+                MY STORE ATUALIZADA COM SUCESSO
+              </span>
+              <h3 class="text-lg bp-heading uppercase text-[#17181c] mt-1">RESUMO DA SUBSTITUIÇÃO & DOWNLOAD</h3>
+            </div>
+            <button id="btnMystoreDownload" type="button" class="px-6 py-3.5 rounded-lg bg-[#1b7a4e] hover:bg-[#15603e] text-white font-black text-sm shadow-md transition cursor-pointer">
+              ⬇️ Baixar ZIP Atualizado da My Store
+            </button>
+          </div>
+
+          <div id="mystoreSummaryCards" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+
+          <div class="bg-[#17181c] text-[#f3be4f] p-4 rounded-xl text-xs font-mono space-y-1 max-h-64 overflow-y-auto custom-scroll" id="mystoreLogContainer"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE PREVIEW AMPLIADO -->
+  <div id="imagePreviewModal" class="fixed inset-0 bg-[#17181c]/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-[#faf7f1] border-2 border-[#17181c] rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-start justify-between border-b border-[#dcd3c0] pb-3 gap-3">
+        <div>
+          <span id="modalItemRoleBadge" class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-[#17181c] text-[#faf7f1]">MOCKUP</span>
+          <h3 id="modalItemTitle" class="text-sm font-bold text-[#17181c] font-mono mt-1.5 break-all">Nome do Arquivo</h3>
+        </div>
+        <button id="btnCloseModal" type="button" class="px-3 py-1.5 rounded-lg bg-[#e5dec9] hover:bg-[#d8cfc0] text-[#17181c] text-xs font-bold shrink-0 cursor-pointer">
+          ✕ Fechar (ESC)
+        </button>
+      </div>
+
+      <div class="bg-white border border-[#dcd3c0] rounded-xl p-4 flex flex-col items-center justify-center min-h-[280px] max-h-[380px] overflow-hidden">
+        <img id="modalImageElement" src="" alt="Preview do Produto" class="max-h-[340px] max-w-full object-contain rounded-lg" />
+        <div id="modalNoImageFallback" class="hidden text-xs text-[#4a463d] font-mono py-12 text-center">
+          Pré-visualização gráfica indisponível para este formato de documento.
+        </div>
+      </div>
+
+      <div class="space-y-3 bg-[#f2ece1] border border-[#dcd3c0] rounded-xl p-4">
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1" for="modalInputFinalName">Nome Final do Arquivo:</label>
+          <input id="modalInputFinalName" type="text" class="w-full h-9 px-3.5 rounded-lg bg-white border border-[#cfc6b4] text-[#17181c] font-mono text-xs font-bold focus:border-[#17181c] focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-[#17181c] mb-1" for="modalSelectFolder">Escolher Pasta Oficial de Destino:</label>
+          <select id="modalSelectFolder" class="w-full h-9 px-3.5 rounded-lg bg-white border-2 border-[#17181c] text-[#17181c] font-mono text-xs font-bold focus:outline-none"></select>
+        </div>
+        <div id="modalVisualNoteText" class="text-xs text-[#4a463d] font-medium"></div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-1">
+        <button id="btnModalSave" type="button" class="px-5 py-2.5 rounded-lg bg-[#17181c] hover:bg-[#2c2e36] text-[#faf7f1] font-black text-xs uppercase tracking-wider transition shadow cursor-pointer">
+          ✓ Salvar Local e Confirmar Produto
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Módulos da Aplicação -->
+  <script src="src/js/config.js"></script>
+  <script src="src/js/utils.js"></script>
+  <script src="src/js/classifier.js"></script>
+  <script src="src/js/processors.js"></script>
+  <script src="src/js/app.js"></script>
+</body>
+</html>
