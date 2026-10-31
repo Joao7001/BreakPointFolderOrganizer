@@ -27,11 +27,16 @@ Ferramenta de cruzamento e consolidação de exportações da plataforma de e-co
 
 ---
 
-## Novidades da Versão `1.0.2`
+## Novidades da Versão `1.0.3` (UI Update)
+
+* **Barra de Carregamento do ZIP (`ETA`)**: Nova barra de progresso em tempo real ao lado do botão de confirmação mostrando o carregamento e quanto tempo falta para o pacote `.zip` ficar pronto para download.
+* **Novo Modal de Atualização Break Point**: Janela de atualização automática redesenhada para seguir a mesma identidade visual do aplicativo, com progresso de download integrado.
+* **Refinamentos de Interface e Navegação**: Rolagem suave automática para a área de download assim que o relatório fica pronto e melhorias visuais nos painéis.
+
+### Novidades da Versão `1.0.2`
 
 * **Integração do Módulo de Relatório de Estoque**: Novo portal integrado ao cabeçalho principal para geração de relatórios `.xlsx`.
 * **Formatação Condicional Dinâmica**: As planilhas geradas utilizam regras nativas de *Conditional Formatting* compatíveis com Excel e Google Sheets.
-* **Indicador de Tempo Restante (`ETA`)**: Nova barra de progresso com cálculo de tempo estimado ao lado do botão de geração de pacotes ZIP.
 
 ---
 
