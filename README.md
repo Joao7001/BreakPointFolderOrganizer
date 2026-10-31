@@ -35,13 +35,30 @@ Ferramenta de cruzamento e consolidação de exportações da plataforma de e-co
 
 ---
 
-## Instalação e Atualizações Automáticas
+## Instalação e Atualizações Automáticas (Como Atualizar da V1)
 
-1. **Instalação Inicial**:
-   * Clique no botão **DOWNLOAD WINDOWS** no topo desta página para baixar o instalador oficial (`Break-Point-Folder-Organizer-Setup-1.0.3.exe`).
-   * Execute o instalador e conclua o assistente. *(Caso o Windows SmartScreen exiba um aviso na primeira execução, clique em **Mais informações** → **Executar assim mesmo**).*
-2. **Atualização Automática (`AutoUpdater`)**:
-   * A partir da versão `1.0.1+`, o aplicativo verifica automaticamente novas releases publicadas ao ser iniciado e oferece o download e instalação com um único clique, sem necessidade de desinstalar versões anteriores.
+[![Assistir Vídeo Tutorial MP4](https://img.shields.io/badge/%F0%9F%8E%AC_ASSISTIR_V%C3%8DDEO_TUTORIAL-Full_HD_(.MP4)-f3be4f?style=for-the-badge&labelColor=17181c)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Tutorial-Atualizacao-BreakPoint-V1-para-Nova-Versao.mp4)
+
+> **⚠️ Importante para quem tem a V1 antiga:**
+> Quem ainda está usando a primeira versão (V1) precisa fazer este passo a passo rápido **apenas 1 única vez**. A partir da nova versão instalada pelo arquivo `Setup`, o programa passa a **atualizar 100% sozinho** sempre que sair novidade!
+
+![Tutorial de Atualização Break Point App](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Tutorial-Atualizacao-BreakPoint.gif)
+
+### Passo a Passo para Quem Tem a V1:
+
+1. **1️⃣ Desinstalar a V1 Antiga no Windows**:
+   * No menu Iniciar do Windows, digite **`Aplicativos instalados`** (ou *Adicionar ou remover programas*).
+   * Procure por **`Break Point Folder Organizer`**, clique nos **3 pontinhos (`⋯`)** ao lado do nome e clique em **`Desinstalar`**.
+   * *(💡 **Dica**: Se a sua V1 era a versão portátil em pasta solta, basta apagar o arquivo/pasta antigo da V1 e excluir o atalho antigo da sua Área de Trabalho para não confundir com o novo).*
+2. **2️⃣ Baixar o Instalador Oficial no GitHub**:
+   * Clique no botão verde **DOWNLOAD WINDOWS** no topo desta página ou baixe diretamente o arquivo com **`Setup`** no nome:
+     👉 **[`Break-Point-Folder-Organizer-Setup-1.0.3.exe`](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Break-Point-Folder-Organizer-Setup-1.0.3.exe)**
+3. **3️⃣ Instalar no Computador (e passar pela tela azul do Windows)**:
+   * Abra o arquivo `Break-Point-Folder-Organizer-Setup-1.0.3.exe` baixado.
+   * Caso o Windows SmartScreen exiba a tela azul (*"O Windows protegeu o computador"*), clique em **`Mais informações`** → **`Executar assim mesmo`**.
+   * Conclua o assistente de instalação clicando em **Avançar / Instalar** e **Concluir**.
+4. **4️⃣ Pronto! Atualização Automática Ativa (`AutoUpdater`)**:
+   * A partir de agora, o aplicativo verifica automaticamente novas releases publicadas ao ser iniciado e oferece o download e instalação com um único clique na tela, sem necessidade de desinstalar versões anteriores.
 
 ---
 
