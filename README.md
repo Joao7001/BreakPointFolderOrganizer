@@ -1,7 +1,7 @@
 # Break Point — Internal Operations Suite
 
-[![Baixar Instalador Windows (Setup .exe)](https://img.shields.io/badge/%E2%AC%87%EF%B8%8F_DOWNLOAD_WINDOWS-Setup_1.0.2.exe-1b7a4e?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Break-Point-Folder-Organizer-Setup-1.0.2.exe)
-[![GitHub Releases](https://img.shields.io/badge/Releases-v1.0.2-17181c?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest)
+[![Baixar Instalador Windows (Setup .exe)](https://img.shields.io/badge/%E2%AC%87%EF%B8%8F_DOWNLOAD_WINDOWS-Setup_1.0.3.exe-1b7a4e?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Break-Point-Folder-Organizer-Setup-1.0.3.exe)
+[![GitHub Releases](https://img.shields.io/badge/Releases-v1.0.3-17181c?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest)
 [![Plataforma](https://img.shields.io/badge/Plataforma-Windows_10_%2F_11_(x64)-d49b27?style=for-the-badge)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest)
 
 Aplicação desktop interna da **Break Point** desenvolvida para unificar e automatizar rotinas operacionais de produção, padronização de pacotes de arquivos e geração de relatórios de estoque em uma única interface.
@@ -38,7 +38,7 @@ Ferramenta de cruzamento e consolidação de exportações da plataforma de e-co
 ## Instalação e Atualizações Automáticas
 
 1. **Instalação Inicial**:
-   * Clique no botão **DOWNLOAD WINDOWS** no topo desta página para baixar o instalador oficial (`Break-Point-Folder-Organizer-Setup-1.0.2.exe`).
+   * Clique no botão **DOWNLOAD WINDOWS** no topo desta página para baixar o instalador oficial (`Break-Point-Folder-Organizer-Setup-1.0.3.exe`).
    * Execute o instalador e conclua o assistente. *(Caso o Windows SmartScreen exiba um aviso na primeira execução, clique em **Mais informações** → **Executar assim mesmo**).*
 2. **Atualização Automática (`AutoUpdater`)**:
    * A partir da versão `1.0.1+`, o aplicativo verifica automaticamente novas releases publicadas ao ser iniciado e oferece o download e instalação com um único clique, sem necessidade de desinstalar versões anteriores.
