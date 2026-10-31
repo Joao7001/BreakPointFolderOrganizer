@@ -37,12 +37,12 @@ Ferramenta de cruzamento e consolidação de exportações da plataforma de e-co
 
 ## Instalação e Atualizações Automáticas (Como Atualizar da V1)
 
-[![Assistir Vídeo Tutorial MP4](https://img.shields.io/badge/%F0%9F%8E%AC_ASSISTIR_V%C3%8DDEO_TUTORIAL-Full_HD_(.MP4)-f3be4f?style=for-the-badge&labelColor=17181c)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Tutorial-Atualizacao-BreakPoint-V1-para-Nova-Versao.mp4)
+[![Assistir Vídeo Tutorial MP4](https://img.shields.io/badge/%F0%9F%8E%AC_ASSISTIR_V%C3%8DDEO_TUTORIAL-Full_HD_(.MP4)-f3be4f?style=for-the-badge&labelColor=17181c)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/download/v1.0.1/Tutorial-Atualizacao-BreakPoint-V1-para-Nova-Versao.mp4)
 
 > **⚠️ Importante para quem tem a V1 antiga:**
 > Quem ainda está usando a primeira versão (V1) precisa fazer este passo a passo rápido **apenas 1 única vez**. A partir da nova versão instalada pelo arquivo `Setup`, o programa passa a **atualizar 100% sozinho** sempre que sair novidade!
 
-![Tutorial de Atualização Break Point App](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Tutorial-Atualizacao-BreakPoint.gif)
+![Tutorial de Atualização Break Point App](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/download/v1.0.1/Tutorial-Atualizacao-BreakPoint.gif)
 
 ### Passo a Passo para Quem Tem a V1:
 
