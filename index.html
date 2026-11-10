@@ -361,55 +361,35 @@
       <div class="bg-white border border-[#e2dac9] rounded-xl p-5 sm:p-6 space-y-5 shadow-sm">
         <div class="border-b border-[#efe9dc] pb-3">
           <span class="px-2.5 py-1 rounded bg-[#d49b27]/20 text-[#a2690e] font-extrabold text-[10px] uppercase tracking-wider">MÓDULO MY STORE</span>
-          <h2 class="text-sm font-extrabold uppercase tracking-wider text-[#17181c] mt-1">1 · ATUALIZAÇÃO DE PASTA DO CLIENTE & SUBSTITUIÇÃO INTELIGENTE DE MOCKUPS</h2>
+          <h2 class="text-sm font-extrabold uppercase tracking-wider text-[#17181c] mt-1">1 · ATUALIZAÇÃO AUTOMÁTICA DE PASTA DO CLIENTE & SUBSTITUIÇÃO DE MOCKUPS</h2>
           <p class="text-xs text-[#4a463d] mt-0.5">
-            Envie a pasta ZIP pronta do cliente e o ZIP com os novos mockups. O sistema atualiza o <strong>#Número Letra</strong> antigo pelo novo (respeitando <strong>Centered</strong> ou <strong>Pocket</strong>), verifica quais mockups estão no ZIP novo e substitui apenas os necessários (ou todos, se for cliente antigo).
+            Digite apenas o <strong>Novo # da My Store</strong>. Como a pasta do cliente já está pronta, o aplicativo identifica sozinho a letra de cada pasta e Final File (<code>A</code> até <code>Z</code>, incluindo se Topwear e Zip Up usam a mesma letra ou letras separadas), troca apenas o <code>#Número</code> antigo pelo novo e aplica a <code>#Nova + Letra</code> nos novos mockups.
           </p>
         </div>
 
-        <!-- Campos de Configuração da My Store -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div>
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="mystoreOldPrefix">Prefixo Antigo (Opcional / Auto)</label>
-            <input id="mystoreOldPrefix" type="text" value="" placeholder="Ex: #1929 A (ou automático)" class="w-full h-10 px-3.5 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] placeholder-[#9ca3af] font-mono text-xs font-bold focus:border-[#17181c] focus:bg-white focus:outline-none" />
+        <!-- Campos Simplificados de Configuração da My Store -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          <div class="lg:col-span-4">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="mystoreNewNumber">Novo Customer / Design # (My Store) *</label>
+            <input id="mystoreNewNumber" type="text" value="" placeholder="Ex: 8001" oninput="window.syncHeaderBadgesImmediate()" class="w-full h-11 px-4 rounded-lg bg-[#faf7f1] border-2 border-[#17181c] text-[#17181c] placeholder-[#9ca3af] font-mono text-base font-black focus:bg-white focus:outline-none" />
           </div>
 
-          <div>
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="mystoreNewNumber">Novo Customer / Design # *</label>
-            <input id="mystoreNewNumber" type="text" value="" placeholder="Ex: 980" oninput="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3.5 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] placeholder-[#9ca3af] font-mono text-sm font-bold focus:border-[#17181c] focus:bg-white focus:outline-none" />
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="mystoreNewLetter">Nova Design Letter *</label>
-            <input id="mystoreNewLetter" type="text" value="" maxlength="5" placeholder="EX: L" oninput="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3.5 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] placeholder-[#9ca3af] font-mono text-sm font-bold uppercase focus:border-[#17181c] focus:bg-white focus:outline-none" />
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="mystoreSelectTopwearType">Posição da Logo (Topwear) *</label>
-            <select id="mystoreSelectTopwearType" onchange="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] text-xs font-bold focus:border-[#17181c] focus:bg-white focus:outline-none">
-              <option value="Centered" selected>Centered (Separa Zip Up em # Letra B)</option>
-              <option value="Pocket">Pocket (Zip Up junta na mesma letra + mesmo Final File)</option>
+          <div class="lg:col-span-8">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1.5" for="mystoreReplaceMode">Modo de Verificação dos Mockups da Pasta do Cliente:</label>
+            <select id="mystoreReplaceMode" class="w-full h-11 px-3.5 rounded-lg bg-[#faf7f1] border border-[#cfc6b4] text-[#17181c] text-xs font-bold focus:border-[#17181c] focus:bg-white focus:outline-none">
+              <option value="SMART_MATCH" selected>🔍 Cliente Novo · Verificação Inteligente (Substitui apenas os mockups enviados no ZIP 2 e mantém os demais já no padrão)</option>
+              <option value="DELETE_ALL_OLD">🗑️ Cliente Antigo · Substituição Total (Deleta 100% dos mockups antigos da pasta e coloca os novos do ZIP 2)</option>
             </select>
-          </div>
-
-          <div id="mystoreContainerZipUpLetter">
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#785212] mb-1.5" for="mystoreZipUpLetter">Nova Zip Up Letter (Centered) *</label>
-            <input id="mystoreZipUpLetter" type="text" value="" maxlength="5" placeholder="EX: B" oninput="window.syncHeaderBadgesImmediate()" class="w-full h-10 px-3.5 rounded-lg bg-[#fdf4dc] border border-[#d49b27] text-[#17181c] placeholder-[#a8997c] font-mono text-sm font-bold uppercase focus:outline-none" />
           </div>
         </div>
 
-        <!-- Modo de Substituição de Mockups (Cliente Novo vs. Cliente Antigo) -->
-        <div class="bg-[#f9f5eb] border border-[#dfd7c6] rounded-lg p-3.5 grid grid-cols-1 md:grid-cols-2 gap-4 items-center text-xs text-[#17181c]">
+        <!-- Resumo Inteligente das Regras Automáticas -->
+        <div class="bg-[#f9f5eb] border border-[#dfd7c6] rounded-lg p-3.5 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-[#4a463d]">
           <div>
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#4a463d] mb-1" for="mystoreReplaceMode">Modo de Verificação dos Mockups da Pasta do Cliente:</label>
-            <select id="mystoreReplaceMode" class="w-full h-9 px-3 rounded-lg bg-white border border-[#cfc6b4] text-[#17181c] text-xs font-bold focus:border-[#17181c] focus:outline-none">
-              <option value="SMART_MATCH" selected>🔍 Verificação Inteligente (Deleta e substitui apenas os mockups presentes no ZIP Novo; mantém os demais já no padrão)</option>
-              <option value="DELETE_ALL_OLD">🗑️ Cliente Antigo (Deletar 100% dos mockups antigos da pasta e colocar somente os do ZIP Novo)</option>
-            </select>
+            ✓ <strong>Detecção Automática de Letras:</strong> Mantém a letra original de cada produto/Final File da pasta pronta (ex: <code>#1234 A</code> vira <code>#8001 A</code>, <code>#1234 B</code> vira <code>#8001 B</code>) e copia a mesma letra para os mockups novos.
           </div>
-          <div class="text-xs text-[#4a463d] space-y-1">
-            <div>✓ <strong>Cliente Novo:</strong> Mantém os mockups da pasta original que já seguem o modelo My Store (atualizando o <code>#Número Letra</code>) e substitui apenas os produtos que vierem no ZIP 2.</div>
-            <div>✓ <strong>Cliente Antigo:</strong> Remove todos os mockups antigos e aplica os novos.</div>
+          <div>
+            ✓ <strong>Mais de 1 Design no Mesmo Produto:</strong> Quando um cliente tiver mais de um design do mesmo produto, basta colocar <code>#Número Letra</code> na pasta do mockup novo (ex: <code>Topwear #1234 A</code>, <code>All Black #1234 B</code>).
           </div>
         </div>
 

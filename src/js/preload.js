@@ -14,5 +14,6 @@ contextBridge.exposeInMainWorld("bpUpdater", {
     ipcRenderer.on("updater:error", (_event, data) => callback(data));
   },
   startDownload: () => ipcRenderer.send("updater:start-download"),
-  quitAndInstall: () => ipcRenderer.send("updater:quit-and-install")
+  quitAndInstall: () => ipcRenderer.send("updater:quit-and-install"),
+  ensureFocus: () => ipcRenderer.send("window:ensure-focus")
 });

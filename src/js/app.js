@@ -4,16 +4,71 @@
 
 window.currentActiveTab = "workflow";
 
+// Substitui o window.alert nativo (que no Electron/Windows trava o foco dos inputs de texto)
+// por um modal HTML no padrão Break Point que preserva o foco do teclado.
+window.showBpNotice = function (message) {
+  let modal = document.getElementById("bpCustomAlertModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "bpCustomAlertModal";
+    modal.className = "fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4";
+    modal.innerHTML = `
+      <div class="bg-[#faf7f1] border-2 border-[#17181c] rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div class="flex items-center gap-2.5 border-b border-[#e2dac9] pb-3">
+          <span class="px-2.5 py-1 rounded bg-[#17181c] text-[#f3be4f] font-black text-[10px] uppercase tracking-wider">AVISO · BREAK POINT</span>
+        </div>
+        <div id="bpCustomAlertText" class="text-sm font-semibold text-[#17181c] whitespace-pre-line leading-relaxed"></div>
+        <div class="flex justify-end pt-2">
+          <button id="bpCustomAlertOkBtn" type="button" class="px-5 py-2.5 rounded-lg bg-[#17181c] hover:bg-[#2c2e36] text-[#faf7f1] text-xs font-black uppercase tracking-wider cursor-pointer shadow">
+            OK, Entendi
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    const closeAlert = () => {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      if (window.bpUpdater?.ensureFocus) window.bpUpdater.ensureFocus();
+    };
+    modal.querySelector("#bpCustomAlertOkBtn").addEventListener("click", closeAlert);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeAlert();
+    });
+  }
+  const textEl = modal.querySelector("#bpCustomAlertText");
+  if (textEl) textEl.textContent = String(message || "");
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+  const okBtn = modal.querySelector("#bpCustomAlertOkBtn");
+  if (okBtn) setTimeout(() => okBtn.focus(), 20);
+};
+window.alert = window.showBpNotice;
+
 window.syncHeaderBadgesImmediate = function () {
   const isMystore = window.currentActiveTab === "mystore";
-  const numEl = document.getElementById(isMystore ? "mystoreNewNumber" : "inputDesignNumber");
-  const letEl = document.getElementById(isMystore ? "mystoreNewLetter" : "inputDesignLetter");
-  const typeEl = document.getElementById(isMystore ? "mystoreSelectTopwearType" : "selectTopwearType");
-  const zipEl = document.getElementById(isMystore ? "mystoreZipUpLetter" : "inputZipUpLetter");
+  const mainBadge = document.getElementById("previewPrefixBadge");
+  const zipBadge = document.getElementById("previewZipUpBadge");
+  const zipText = document.getElementById("previewZipUpText");
+  const setupZipContainer = document.getElementById("containerZipUpLetter");
+
+  if (isMystore) {
+    const mystoreNumEl = document.getElementById("mystoreNewNumber");
+    const rawNum = mystoreNumEl ? mystoreNumEl.value.trim().replace(/^#+/, "") : "";
+    const displayNum = rawNum || "---";
+    if (mainBadge) mainBadge.textContent = `#${displayNum} (Letras Auto)`;
+    if (zipBadge) zipBadge.classList.add("hidden");
+    return;
+  }
+
+  const numEl = document.getElementById("inputDesignNumber");
+  const letEl = document.getElementById("inputDesignLetter");
+  const typeEl = document.getElementById("selectTopwearType");
+  const zipEl = document.getElementById("inputZipUpLetter");
 
   if (!numEl || !letEl || !typeEl || !zipEl) return;
 
-  const rawNum = numEl.value.trim();
+  const rawNum = numEl.value.trim().replace(/^#+/, "");
   const rawLet = letEl.value.trim().toUpperCase();
   const topType = typeEl.value;
   const rawZipLet = zipEl.value.trim().toUpperCase();
@@ -22,23 +77,10 @@ window.syncHeaderBadgesImmediate = function () {
   const displayLet = rawLet || "-";
   const displayZipLet = rawZipLet || "-";
 
-  const mainBadge = document.getElementById("previewPrefixBadge");
-  const zipBadge = document.getElementById("previewZipUpBadge");
-  const zipText = document.getElementById("previewZipUpText");
-
-  const setupZipContainer = document.getElementById("containerZipUpLetter");
-  const mystoreZipContainer = document.getElementById("mystoreContainerZipUpLetter");
-
   if (mainBadge) mainBadge.textContent = `#${displayNum} ${displayLet}`;
 
-  const setupTypeEl = document.getElementById("selectTopwearType");
-  if (setupTypeEl && setupZipContainer) {
-    setupZipContainer.classList.toggle("hidden", setupTypeEl.value !== "Centered");
-  }
-
-  const mystoreTypeEl = document.getElementById("mystoreSelectTopwearType");
-  if (mystoreTypeEl && mystoreZipContainer) {
-    mystoreZipContainer.classList.toggle("hidden", mystoreTypeEl.value !== "Centered");
+  if (setupZipContainer) {
+    setupZipContainer.classList.toggle("hidden", topType !== "Centered");
   }
 
   if (topType === "Centered") {
@@ -87,6 +129,16 @@ const UIController = {
   init() {
     this.bindEvents();
     window.syncHeaderBadgesImmediate();
+
+    // Garante que qualquer clique em campos de texto restaure o foco de teclado no Electron/Windows
+    document.addEventListener("mousedown", (e) => {
+      const target = e.target;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT")) {
+        if (window.bpUpdater?.ensureFocus) {
+          window.bpUpdater.ensureFocus();
+        }
+      }
+    }, true);
   },
 
   async assignMultipleZipsAndAnalyze(fileList) {
@@ -254,12 +306,11 @@ const UIController = {
 
     document.getElementById("btnMystoreDownload").addEventListener("click", () => {
       if (!AppState.mystoreExportBlob) return;
-      const num = document.getElementById("mystoreNewNumber").value.trim() || "980";
-      const lettr = (document.getElementById("mystoreNewLetter").value.trim() || "L").toUpperCase();
+      const num = document.getElementById("mystoreNewNumber").value.trim().replace(/^#+/, "") || "8001";
       const url = URL.createObjectURL(AppState.mystoreExportBlob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `MyStore_#${num}_${lettr}_Atualizado.zip`;
+      a.download = `MyStore_#${num}_Atualizado.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -324,29 +375,21 @@ const UIController = {
   },
 
   async handleMyStoreProcess() {
-    if (!AppState.mystoreOldZip || !AppState.mystoreNewMockupsZip) {
-      alert("Por favor, selecione tanto o ZIP 1 (Pasta Pronta do Cliente) quanto o ZIP 2 (Novos Mockups).");
+    if (!AppState.mystoreOldZip) {
+      alert("Por favor, selecione o ZIP 1 (Pasta Pronta do Cliente).");
       return;
     }
     const newNum = document.getElementById("mystoreNewNumber").value.trim();
-    const newLet = document.getElementById("mystoreNewLetter").value.trim().toUpperCase();
-    const topwearType = document.getElementById("mystoreSelectTopwearType").value;
-    const zipUpLetter = (document.getElementById("mystoreZipUpLetter").value.trim() || "B").toUpperCase();
-    const oldPrefix = document.getElementById("mystoreOldPrefix").value.trim();
     const replaceMode = document.getElementById("mystoreReplaceMode").value;
 
-    if (!newNum || !newLet) {
-      alert("Por favor, preencha o Novo Customer / Design # e a Nova Design Letter.");
+    if (!newNum) {
+      alert("Por favor, preencha o Novo Customer / Design # da My Store.");
       return;
     }
 
     try {
       const res = await MyStoreEngine.processMyStore(AppState.mystoreOldZip, AppState.mystoreNewMockupsZip, {
-        oldPrefix,
         newNumber: newNum,
-        newLetter: newLet,
-        topwearType,
-        zipUpLetter,
         replaceMode
       });
 
@@ -369,10 +412,7 @@ const UIController = {
     AppState.mystoreOldZip = null;
     AppState.mystoreNewMockupsZip = null;
     AppState.mystoreExportBlob = null;
-    document.getElementById("mystoreOldPrefix").value = "";
     document.getElementById("mystoreNewNumber").value = "";
-    document.getElementById("mystoreNewLetter").value = "";
-    document.getElementById("mystoreZipUpLetter").value = "";
     document.getElementById("mystoreFileOldZip").value = "";
     document.getElementById("mystoreFileNewMockupsZip").value = "";
     document.getElementById("mystoreFileBothZips").value = "";

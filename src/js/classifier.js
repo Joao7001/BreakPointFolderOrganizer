@@ -4,12 +4,14 @@
 
 const ExclusionFilterEngine = {
   isGiOrBeltPatch(fileName, relativePath = "") {
-    const combined = `${relativePath} ${fileName}`.toLowerCase();
+    const cleanName = String(fileName || "").split("/").pop().trim();
+    const combined = `${relativePath} ${cleanName}`.toLowerCase();
+    if (/^#*\d*\s*(?:[a-z]\s+)?patch(?:es)?\.[a-z0-9]+$/i.test(cleanName)) return true;
     return /\b(gi\s*[-_]?\s*patch(?:es)?|gipatch(?:es)?|belt\s*[-_]?\s*patch(?:es)?|beltpatch(?:es)?|patch(?:es)?\s+final\s*file|patch(?:es)?\s+mockup)\b/i.test(combined);
   },
 
   isMultiColorMockupThumbnail(fileName, relativePath = "", sourceRole = "Mockup") {
-    const cleanName = fileName.split("/").pop();
+    const cleanName = fileName.split("/").pop().trim();
     const combined = `${relativePath} ${cleanName}`.toLowerCase();
 
     if (sourceRole === "Final File" || /\bfinal\s*files?\b/i.test(cleanName)) {
@@ -17,10 +19,18 @@ const ExclusionFilterEngine = {
     }
 
     let productPart = cleanName.replace(/\.[^.]+$/, "");
-    productPart = productPart.replace(/^#\d+\s+[A-Za-z0-9]+\s+/, "");
+    productPart = productPart.replace(/^#+\d+(?:\s+[A-Za-z]\b)?\s+/, "");
     productPart = productPart.split(/\s+-\s+/)[0].trim().toLowerCase();
 
-    if (/\b(rash\s*guards?|rashguards?|no\s*gi|nogi|hat|hats|beanie|beanies|cap|perforated|bon[eé]|gorro|stickers?)\b/i.test(productPart)) {
+    if (/^logos?$/i.test(productPart)) {
+      return { excluded: true, reason: "Arquivo de Logos ignorado." };
+    }
+
+    // Thumbnails de Rashguards (ex: "All Black LS Ranked RashGuards.jpg", "Academy BlackWhite RashGuards-1.jpg")
+    if (/\brash\s*guards(?:\s*-\s*\d+|-\d+)?$/i.test(productPart) || /\brashguards-\d+$/i.test(productPart)) {
+      return { excluded: true, reason: "Mockup Thumbnail de Rashguards (várias peças juntas)." };
+    }
+    if (/\b(rash\s*guards?|rashguards?|no\s*gi|nogi|stickers?)\b/i.test(productPart)) {
       return { excluded: false, reason: null };
     }
     if (/\b(thumbnails?|thumbs?|all\s*colors?|multi\s*[-_]?\s*colors?|color\s*variations?|colorways?|collage|collection\s*mockup|bundle\s*mockup|cover\s*mockup)\b/i.test(combined)) {
@@ -29,7 +39,7 @@ const ExclusionFilterEngine = {
     if (/^basketball\s+jerseys?(?:\s+2\.0)?\s+mockups?$/i.test(productPart)) {
       return { excluded: true, reason: "Mockup Thumbnail de Basketball Jersey." };
     }
-    if (/\b(shirts|t-shirts|tees|hoodies|sweatshirts|tank\s+tops|jerseys|bags|backpacks|duffels)\b/i.test(productPart)) {
+    if (/\b(shirts|t-shirts|tees|hoodies|sweatshirts|tank\s+tops|jerseys|bags|backpacks|duffels|hats|beanies)\b/i.test(productPart)) {
       return { excluded: true, reason: "Mockup Thumbnail em lote." };
     }
     if (/^(topwear|bottom\s*wear|(?:womens\s+|kids\s+|adult\s+)?(?:sweat\s*shorts?|sweat\s*pants?|joggers?|shorts?))(?:\s+2\.0)?\s+mockups?$/i.test(productPart)) {
@@ -47,25 +57,33 @@ const ExclusionFilterEngine = {
 
 const RenamingEngine = {
   extractExistingPrefix(fileName) {
-    const match = fileName.match(/^#(\d+)\s+([A-Za-z0-9]+)\s+(.*)$/);
+    const clean = String(fileName || "").split("/").pop().trim();
+    const match = clean.match(/^#+(\d+)(?:\s+([A-Za-z])\b)?\s+(.*)$/);
     if (!match) return null;
-    return { number: match[1], letter: match[2].toUpperCase(), restOfName: match[3] };
+    return {
+      number: match[1],
+      letter: match[2] ? match[2].toUpperCase() : null,
+      restOfName: match[3].trim()
+    };
   },
 
   buildPrefix(designNumber, designLetter) {
-    return `#${String(designNumber).trim()} ${String(designLetter).trim().toUpperCase()}`;
+    const cleanNum = String(designNumber).trim().replace(/^#+/, "");
+    return `#${cleanNum} ${String(designLetter).trim().toUpperCase()}`;
   },
 
   renameStandardFile(originalFileName, targetNumber, targetLetter) {
-    const cleanName = originalFileName.split("/").pop();
-    const desiredPrefix = this.buildPrefix(targetNumber, targetLetter);
+    const cleanName = String(originalFileName || "").split("/").pop().trim();
+    const cleanNum = String(targetNumber).trim().replace(/^#+/, "");
+    const cleanLet = String(targetLetter).trim().toUpperCase();
+    const desiredPrefix = this.buildPrefix(cleanNum, cleanLet);
     const existing = this.extractExistingPrefix(cleanName);
 
     if (existing) {
-      if (existing.number === String(targetNumber).trim() && existing.letter === String(targetLetter).trim().toUpperCase()) {
-        return { finalName: cleanName, alreadyPrefixed: true };
-      }
-      return { finalName: `${desiredPrefix} ${existing.restOfName}`, alreadyPrefixed: false };
+      return {
+        finalName: `${desiredPrefix} ${existing.restOfName}`,
+        alreadyPrefixed: existing.number === cleanNum && existing.letter === cleanLet
+      };
     }
     return { finalName: `${desiredPrefix} ${cleanName}`, alreadyPrefixed: false };
   },
@@ -147,8 +165,8 @@ const CategoryClassifier = {
   },
 
   cleanProductPartForColor(fileName) {
-    let base = fileName.split("/").pop().replace(/\.[^.]+$/, "");
-    base = base.replace(/^#\d+\s+[A-Za-z0-9]+\s+/, "");
+    let base = String(fileName || "").split("/").pop().trim().replace(/\.[^.]+$/, "");
+    base = base.replace(/^#+\d+(?:\s+[A-Za-z]\b)?\s+/, "");
     base = base.replace(/\(rectangle\)/gi, " ");
     base = base.replace(/\b(final\s*files?|mockups?)\s*-\s*.*$/i, "$1");
     return base.trim().toLowerCase();
@@ -156,10 +174,11 @@ const CategoryClassifier = {
 
   detectColorGroup(fileName, relativePath = "", allowWhite = true) {
     const lower = this.cleanProductPartForColor(fileName);
+    const relLower = String(relativePath || "").toLowerCase();
     if (allowWhite && (/\bwhite\s+dtf\b/i.test(lower) || /\bdtf\s+white\b/i.test(lower))) return "White";
     if (/\bblack\s+dtf\b/i.test(lower) || /\bdtf\s+black\b/i.test(lower)) return "Black";
     if (/\bdarker\s+colors?\b/i.test(lower)) return "Darker Colors";
-    if (/\blight\s+colors?\b/i.test(lower)) return "Light Colors";
+    if (/\blight\s+colors?\b/i.test(lower) || /\bother\s+colors?\b/i.test(lower)) return "Light Colors";
 
     const mem = VisualMemoryEngine.queryMemory(fileName);
     if (mem && mem.colorGroup) {
@@ -185,6 +204,7 @@ const CategoryClassifier = {
 
     if (/\bblue\b/i.test(lower)) return "Darker Colors";
     if (/\bgr[ae]y\b/i.test(lower)) return "Light Colors";
+    if (/\bother\s+colors?\b/i.test(relLower)) return "Light Colors";
     return null;
   },
 
@@ -224,12 +244,13 @@ const CategoryClassifier = {
     }
     const zipLetter = (config.zipUpLetter || "B").trim().toUpperCase();
     const mainLetter = (config.designLetter || "A").trim().toUpperCase();
+    const cleanNum = String(config.designNumber).trim().replace(/^#+/, "");
     if (zipLetter && zipLetter !== mainLetter) {
       const existing = RenamingEngine.extractExistingPrefix(originalName.split("/").pop());
-      if (existing && existing.number === String(config.designNumber).trim() && existing.letter === zipLetter) {
+      if (existing && existing.number === cleanNum && existing.letter === zipLetter) {
         return true;
       }
-      if (new RegExp(`#${config.designNumber}\\s*${zipLetter}\\b`, "i").test(relativePath)) {
+      if (new RegExp(`#+${cleanNum}\\s*${zipLetter}\\b`, "i").test(relativePath)) {
         return true;
       }
     }
@@ -239,9 +260,11 @@ const CategoryClassifier = {
   classifyFile(originalName, relativePath, config, sourceRole = "Final File", visualInfo = null, forceInclude = false) {
     const productNameClean = this.cleanProductPartForColor(originalName);
     const fileNameOnlyLower = originalName.split("/").pop().toLowerCase();
-    const { designNumber, designLetter, zipUpLetter } = config;
-    const mainPrefix = `#${designNumber} ${designLetter.toUpperCase()}`;
-    const zipPrefix = `#${designNumber} ${(zipUpLetter || "B").toUpperCase()}`;
+    const relPathLower = String(relativePath || "").toLowerCase();
+    const cleanDesignNum = String(config.designNumber).trim().replace(/^#+/, "");
+    const { designLetter, zipUpLetter } = config;
+    const mainPrefix = `#${cleanDesignNum} ${designLetter.toUpperCase()}`;
+    const zipPrefix = `#${cleanDesignNum} ${(zipUpLetter || "B").toUpperCase()}`;
 
     const hasFinalFileInName = /\bfinal\s*files?\b/i.test(originalName);
     const hasMockupInName = /\bmockups?\b/i.test(originalName) && !hasFinalFileInName;
@@ -305,7 +328,7 @@ const CategoryClassifier = {
       };
     }
 
-    if (/\b(hat|hats|beanie|beanies|cap|bon[eé]|gorro)\b/i.test(productNameClean)) {
+    if (/\b(hat|hats|beanie|beanies|cap|bon[eé]|gorro)\b/i.test(productNameClean) || /\bhats?\s+and\s+beanies\b/i.test(relPathLower)) {
       return {
         effectiveRole,
         category: "Hats and Beanies",
@@ -321,7 +344,7 @@ const CategoryClassifier = {
       };
     }
 
-    if (/\b(bag|bags|backpack|duffel|crossbody|drawstring|mochila|bolsa)\b/i.test(productNameClean)) {
+    if (/\b(bag|bags|backpack|duffel|crossbody|drawstring|mochila|bolsa)\b/i.test(productNameClean) || /\bbags?\b/i.test(relPathLower)) {
       let bagSize = memMatch?.bagSize || "8 Inches";
       if (/\b4\s*(?:inches|inch|in|")\b/i.test(productNameClean) || /\bcrossbody\b/i.test(productNameClean)) bagSize = "4 Inches";
       else if (/\b6\s*(?:inches|inch|in|")\b/i.test(productNameClean) || /\b(hybrid\s+backpack|small\s+duffel)\b/i.test(productNameClean)) bagSize = "6 Inches";
@@ -347,14 +370,24 @@ const CategoryClassifier = {
       };
     }
 
-    // RASHGUARDS (Prioridade absoluta antes de Bottom Wear)
-    const isRashguardOrNoGi = /\b(rash\s*guards?|rashguards?|no\s*gi|nogi)\b/i.test(productNameClean);
+    // RASHGUARDS (Prioridade absoluta antes de Bottom Wear, exceto quando o arquivo é explicitamente Shorts/Joggers/Sweat)
+    const hasExplicitBottomWearWord =
+      /\b(shorts?|sweat\s*shorts?|sweat\s*pants?|sweatpants?|joggers?|cal[cç]a)\b/i.test(productNameClean) &&
+      !/\b(short\s*sleeves?|rash\s*guards?|rashguards?)\b/i.test(productNameClean);
+
+    const isRashguardOrNoGi =
+      !hasExplicitBottomWearWord &&
+      (/\b(rash\s*guards?|rashguards?|no\s*gi|nogi|academy\s+rash\s*guards?)\b/i.test(productNameClean) ||
+        /\b(rash\s*guards?|rashguards?|no\s*gi|nogi|academy\s+rash\s*guards?)\b/i.test(relPathLower));
+
     if (isRashguardOrNoGi) {
       const explicitAge = this.detectAgeGroup(productNameClean);
-      const age = explicitAge === "Kids" ? "Kids" : "Adult";
-      const shareBoth = isMockupFile && !explicitAge && config.shareMockupsAdultKids;
+      const pathHasKids = /\/kids(\/|$)/i.test(relPathLower);
+      const age = (explicitAge === "Kids" || (!explicitAge && pathHasKids)) ? "Kids" : "Adult";
+      const shareBoth = isMockupFile && !explicitAge && !pathHasKids && config.shareMockupsAdultKids;
 
-      if (/\ball\s*black\b/i.test(productNameClean)) {
+      // 1. All Black (no nome do arquivo ou na pasta ex: "All Black", "Rashguards/All Black Rashguards")
+      if (/\ball\s*black\b/i.test(productNameClean) || /\ball\s*black\b/i.test(relPathLower)) {
         return {
           effectiveRole,
           category: "All Black",
@@ -370,16 +403,24 @@ const CategoryClassifier = {
         };
       }
 
-      const mentionsNoGi = /\bno\s*gi\b|\bnogi\b/i.test(productNameClean);
+      // 2. Academy Rashguard ou No Gi explícito no caminho ou no arquivo -> No Gi
+      const mentionsNoGiOrAcademy =
+        /\b(no\s*gi|nogi|academy\s+rash\s*guards?|academy\s+rashguards?)\b/i.test(productNameClean) ||
+        /\b(no\s*gi|nogi|academy\s+rash\s*guards?|academy\s+rashguards?)\b/i.test(relPathLower);
+
+      // 3. Colored Rashguard explícito na pasta (ex: "Colored Rashguard" ou "Rashguards/Colored Rashguards")
+      const mentionsColoredInPath = /\bcolored\s+rash\s*guards?\b|\bcolored\s+rashguards?\b/i.test(relPathLower);
+
       const isGenericNoGiRashguardName = /^(?:adult\s+|kids\s+)?rash\s*guards?(?:\s+(?:adult|kids))?\s+(?:mockups?|final\s*files?)$/i.test(productNameClean);
       const detectedRashColor = this.detectColorGroup(originalName, "", true);
       const isColoredRashguard =
-        !mentionsNoGi &&
-        !isGenericNoGiRashguardName &&
-        !(/\(rectangle\)/i.test(originalName)) &&
-        (/\b(light\s+colors?|darker\s+colors?|colored)\s+rash\s*guards?\b/i.test(productNameClean) || detectedRashColor !== null);
+        mentionsColoredInPath ||
+        (!mentionsNoGiOrAcademy &&
+          !isGenericNoGiRashguardName &&
+          !(/\(rectangle\)/i.test(originalName)) &&
+          (/\b(light\s+colors?|darker\s+colors?|colored)\s+rash\s*guards?\b/i.test(productNameClean) || detectedRashColor !== null));
 
-      if (isColoredRashguard) {
+      if (isColoredRashguard && !mentionsNoGiOrAcademy) {
         return {
           effectiveRole,
           category: "Colored RashGuard",
@@ -418,10 +459,11 @@ const CategoryClassifier = {
       !isSweatOrJogger &&
       ((/\bshorts\b/i.test(productNameClean) && !/\bshort\s*sleeves?\b/i.test(productNameClean)) ||
         /\bbottom\s*wear\b/i.test(productNameClean) ||
+        /\bbottom\s*wear\b/i.test(relPathLower) ||
         shortsInchesDetected !== null);
 
     if (isSweatOrJogger || (/\bbottom\s*wear\b/i.test(productNameClean) && sweatInchesDetected !== null)) {
-      let colorGroup = this.detectColorGroup(originalName, "", false);
+      let colorGroup = this.detectColorGroup(originalName, relativePath, false);
       if (!colorGroup) {
         if (/\bgr[ae]y\s+joggers?\b/i.test(productNameClean)) colorGroup = "Darker Colors";
         else colorGroup = "Black";
@@ -448,7 +490,7 @@ const CategoryClassifier = {
     }
 
     if (isShortsOrBottomWear) {
-      let colorGroup = this.detectColorGroup(originalName, "", false);
+      let colorGroup = this.detectColorGroup(originalName, relativePath, false);
       if (!colorGroup) {
         if (/\ball\s*black\b|\bblack\b|\bmuay\s*thai\b/i.test(productNameClean)) colorGroup = "Black";
         else if (/\bwhite\b/i.test(productNameClean)) colorGroup = "Light Colors";
@@ -462,6 +504,8 @@ const CategoryClassifier = {
       }
 
       const explicitAge = this.detectAgeGroup(productNameClean);
+      const pathHasKids = /\/kids(\/|$)/i.test(relPathLower);
+      const pathHasAdult = /\/adult(\/|$)/i.test(relPathLower);
       let resolvedAge = "Adult";
       if (shortsInchesDetected === "CONFLICT_SIZES") {
         needsReview = true;
@@ -482,7 +526,11 @@ const CategoryClassifier = {
           warnings.push("Inconsistência: 4.5 Inches e Adult!");
         }
       } else if (explicitAge === "Adult" || explicitAge === "Kids") {
-        resolvedAge = explicitAge;
+        resolvedAge = (!isMockupFile && pathHasKids) ? "Kids" : explicitAge;
+      } else if (pathHasKids) {
+        resolvedAge = "Kids";
+      } else if (pathHasAdult) {
+        resolvedAge = "Adult";
       } else if (!isMockupFile || !config.shareMockupsAdultKids) {
         needsReview = true;
         reviewType = "SHORTS_AMBIGUOUS";
@@ -506,16 +554,20 @@ const CategoryClassifier = {
     }
 
     // Topwear DTF
-    const isTopwearKeyword = /\b(topwear|dtf|basketball\s*jersey|jersey|tank\s*top|crewneck|sweatshirt|cropped|oversized|t-shirt|tshirt|tee|shirt|hoodie|zip\s*ups?|zip-ups?|zipups?|sherpa|varsity|sweater|camiseta|moletom|pocket)\b/i.test(productNameClean);
+    const isTopwearKeyword =
+      /\b(topwear|dtf|ttnh|windbreaker|basketball\s*jersey|jersey|tank\s*top|crewneck|sweatshirt|cropped|oversized|t-shirt|tshirt|tee|shirt|hoodie|zip\s*ups?|zip-ups?|zipups?|sherpa|varsity|sweater|camiseta|moletom|pocket)\b/i.test(productNameClean) ||
+      /\b(topwear|zip\s*ups?|zip-ups?|zipups?|shirts?\s+and\s+hoodies?)\b/i.test(relPathLower);
     const mentionsZipUpGarment = /\b(zip\s*ups?|zip-ups?|zipups?|sherpa\s+zip\s*up|varsity\s+zip\s*up)\b/i.test(productNameClean);
     const isSeparatedZipUp = this.isSeparatedZipUpFile(originalName, relativePath, config);
 
     if (isTopwearKeyword || isSeparatedZipUp) {
       const explicitAge = this.detectAgeGroup(productNameClean);
+      const pathHasKids = /\/kids(\/|$)/i.test(relPathLower);
       const isCroppedPiece = /\bcropped\b/i.test(productNameClean);
       let age = "Adult";
-      if (explicitAge === "Kids" || isCroppedPiece) age = "Kids";
+      if (explicitAge === "Kids" || isCroppedPiece || (!isMockupFile && pathHasKids)) age = "Kids";
       else if (explicitAge === "Adult") age = "Adult";
+      else if (pathHasKids) age = "Kids";
       else if (!isMockupFile) {
         needsReview = true;
         reviewType = "AGE_MISSING";
@@ -523,7 +575,7 @@ const CategoryClassifier = {
       }
 
       if (isSeparatedZipUp) {
-        let colorGroup = this.detectColorGroup(originalName, "", false);
+        let colorGroup = this.detectColorGroup(originalName, relativePath, false);
         if (/\bwhite\b/i.test(productNameClean)) {
           needsReview = true;
           reviewType = "ZIPUP_WHITE_FORBIDDEN";
@@ -546,7 +598,7 @@ const CategoryClassifier = {
         };
       }
 
-      const colorGroup = this.detectColorGroup(originalName, "", !mentionsZipUpGarment) || "Black";
+      const colorGroup = this.detectColorGroup(originalName, relativePath, !mentionsZipUpGarment) || "Black";
       const isGenericBlackHoodieMockup = isMockupFile && colorGroup === "Black" && /\bblack\s+hoodie\s+mockup\b/i.test(productNameClean) && !explicitAge && config.shareMockupsAdultKids;
       const isPocketModeZipUpMockup = isMockupFile && mentionsZipUpGarment && config.topwearType !== "Centered";
       const shouldShare = isGenericBlackHoodieMockup || isPocketModeZipUpMockup;

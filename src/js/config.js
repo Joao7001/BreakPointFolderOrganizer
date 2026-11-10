@@ -46,7 +46,7 @@ const VisualMemoryEngine = {
 
   extractGarmentSignature(fileName) {
     let clean = fileName.split("/").pop().replace(/\.[^.]+$/, "");
-    clean = clean.replace(/^#\d+\s+[A-Za-z0-9]+\s+/, "");
+    clean = clean.trim().replace(/^#+\d+(?:\s+[A-Za-z]\b)?\s+/, "");
     clean = clean.split(/\s+-\s+/)[0].trim();
     return clean.toLowerCase();
   },

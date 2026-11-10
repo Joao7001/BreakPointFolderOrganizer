@@ -62,6 +62,18 @@ function setupAutoUpdater() {
   });
 }
 
+ipcMain.on('window:ensure-focus', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (!mainWindow.isFocused()) {
+      mainWindow.blur();
+      mainWindow.focus();
+    }
+    if (mainWindow.webContents) {
+      mainWindow.webContents.focus();
+    }
+  }
+});
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1440,
@@ -78,7 +90,17 @@ function createWindow() {
 
   mainWindow.loadFile('index.html');
 
+  mainWindow.on('focus', () => {
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
+      mainWindow.webContents.focus();
+    }
+  });
+
   mainWindow.webContents.once('did-finish-load', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.focus();
+      mainWindow.webContents.focus();
+    }
     setupAutoUpdater();
   });
 }

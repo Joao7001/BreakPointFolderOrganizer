@@ -39,6 +39,58 @@ const VisualImageInspector = {
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   },
 
+  /**
+   * Verifica se os bytes da imagem possuem fundo transparente (canal alfa com transparência significativa).
+   * Final Files (arquivos de impressão DTF/Sublimação) sempre possuem fundo transparente.
+   */
+  async hasTransparentBackground(bytes, fileName = "") {
+    const ext = (fileName.split(".").pop() || "").toLowerCase();
+    // JPG/JPEG não suportam transparência -> nunca têm fundo transparente (são Mockups)
+    if (ext === "jpg" || ext === "jpeg") return false;
+    if (!["png", "webp"].includes(ext) || !bytes || bytes.length <= 64) return false;
+
+    try {
+      const blob = new Blob([bytes], { type: ext === "webp" ? "image/webp" : "image/png" });
+      if (typeof createImageBitmap === "function") {
+        const bitmap = await createImageBitmap(blob);
+        const w = Math.min(bitmap.width, 64);
+        const h = Math.min(bitmap.height, 64);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        ctx.drawImage(bitmap, 0, 0, w, h);
+        if (typeof bitmap.close === "function") bitmap.close();
+
+        const data = ctx.getImageData(0, 0, w, h).data;
+        let transparentPixels = 0;
+        let cornerTransparent = 0;
+        const totalPixels = w * h;
+
+        // Checa os 4 cantos da imagem
+        const cornerIndices = [
+          0,
+          (w - 1) * 4,
+          (h - 1) * w * 4,
+          ((h - 1) * w + (w - 1)) * 4
+        ];
+        for (const idx of cornerIndices) {
+          if (data[idx + 3] < 200) cornerTransparent++;
+        }
+
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i] < 200) transparentPixels++;
+        }
+
+        const transparentRatio = transparentPixels / Math.max(totalPixels, 1);
+        return cornerTransparent >= 2 && transparentRatio >= 0.08;
+      }
+    } catch (e) {
+      // Fallback silencioso caso não consiga decodificar
+    }
+    return false;
+  },
+
   async inspectImageBytes(bytes, fileName, sourceRole = "Mockup") {
     const ext = (fileName.split(".").pop() || "").toLowerCase();
     const memMatch = VisualMemoryEngine.queryMemory(fileName);
