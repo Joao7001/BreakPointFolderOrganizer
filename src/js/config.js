@@ -95,7 +95,7 @@ const BreakPointConfig = {
   darkerColorsKeywords: [
     "darker colors dtf", "darker color", "darker colors", "dark color",
     "sherpa", "shadow", "black camo", "asphalt", "espresso", "heather heavy metal", "heavy metal",
-    "midnight navy", "navy", "military green", "royal blue", "royal heather",
+    "midnight navy", "navy", "military green", "army heather", "army", "storm blue", "royal blue", "royal heather",
     "charcoal", "dry fit gray", "dry fit grey", "brown",
     "maroon", "burgundy", "forest green", "olive", "dark green", "purple"
   ],
