@@ -1,7 +1,7 @@
 # Break Point — Internal Operations Suite
 
-[![Baixar Instalador Windows (Setup .exe)](https://img.shields.io/badge/%E2%AC%87%EF%B8%8F_DOWNLOAD_WINDOWS-Setup_1.0.4.exe-1b7a4e?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Break-Point-Folder-Organizer-Setup-1.0.4.exe)
-[![GitHub Releases](https://img.shields.io/badge/Releases-v1.0.4-17181c?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest)
+[![Baixar Instalador Windows (Setup .exe)](https://img.shields.io/badge/%E2%AC%87%EF%B8%8F_DOWNLOAD_WINDOWS-Setup_1.0.5.exe-1b7a4e?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Break-Point-Folder-Organizer-Setup-1.0.5.exe)
+[![GitHub Releases](https://img.shields.io/badge/Releases-v1.0.5-17181c?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest)
 [![Plataforma](https://img.shields.io/badge/Plataforma-Windows_10_%2F_11_(x64)-d49b27?style=for-the-badge)](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest)
 
 Aplicação desktop interna da **Break Point** desenvolvida para unificar e automatizar rotinas operacionais de produção, padronização de pacotes de arquivos e geração de relatórios de estoque em uma única interface.
@@ -27,16 +27,13 @@ Ferramenta de cruzamento e consolidação de exportações da plataforma de e-co
 
 ---
 
-## Novidades da Versão `1.0.4`
+## Novidades da Versão `1.0.5`
 
-* **Novo Fluxo Simplificado do `My Store`**: Basta informar o **Novo Número do Pedido** e o **Modo de Substituição**. O sistema detecta automaticamente as letras de design (`A`, `B`, `C`...) direto dos arquivos novos e cria subpastas de variação (`#<Número> <Letra>`) quando uma categoria possui mais de um design.
-* **Modo Excluir Antigos com Padrão `Setup`**: Ao escolher *Excluir Antigos e Adicionar Novos*, a estrutura da loja é reconstruída automaticamente com a mesma árvore limpa e padronizada do modo `Setup`, preservando pastas especiais da loja.
-* **Detecção Visual de Transparência (`Final Files` vs `Mockups`)**: Inspeção automática dos pixels de borda das imagens para diferenciar com precisão artes de impressão com fundo transparente (`Final Files`) de imagens com fundo sólido (`Mockups`).
-* **Novas Regras de Classificação e Filtros Inteligentes**:
-  * `Shorts`, `Sweat Shorts` e `Joggers` dentro de pastas `No Gi` ou `All Black` são direcionados automaticamente para **`3. Bottom Wear DTF`**.
-  * Reconhecimento automático de `Other Colors` → **`Light Colors`**, `Academy Rashguard` → **`2. No Gi`**, `Colored Rashguard` → **`5. Colored RashGuard`**, além de `TTNH` e `Windbreaker` em **`1. Topwear DTF`** (incluindo suporte à subpasta `/Kids/`).
-  * Filtro automático para ignorar pastas `/LOGOS/`, imagens em lote no plural (`Rashguards`, `Hats`, `Beanies`) e arquivos avulsos de patch.
-* **Correção de Foco de Teclado no Windows**: Substituição de alertas nativos por modais integrados à interface e sincronização de foco via Electron, eliminando o bloqueio de digitação nos campos após avisos ou reinicializações.
+* **Novas Cores Classificadas como `Darker Colors`**: Adicionado reconhecimento automático de **`Army Heather`** (`Army`) e **`Storm Blue`** na lista de palavras-chave de cores escuras (`Darker Colors`) para classificação precisa em `Topwear DTF` e `Bottom Wear DTF`.
+* **Melhorias Consolidadas (`1.0.4` + `1.0.5`)**:
+  * **Fluxo Simplificado do `My Store`**: Detecção automática de letras de design (`A`, `B`, `C`...) e criação automática de subpastas por variação (`#<Número> <Letra>`).
+  * **Detecção Visual de Transparência**: Diferenciação automática pixel a pixel entre `Final Files` (fundo transparente) e `Mockups` (fundo sólido).
+  * **Regras de Classificação e Filtros**: Suporte a `Shorts`/`Joggers` em `No Gi` e `All Black` como `Bottom Wear DTF`, `Other Colors` → `Light Colors`, `Academy Rashguard`, `Colored RashGuard`, `TTNH`/`Windbreaker` e filtros para `/LOGOS/`, lotes no plural e patches avulsos.
 
 ---
 
@@ -57,9 +54,9 @@ Ferramenta de cruzamento e consolidação de exportações da plataforma de e-co
    * *(💡 **Dica**: Se a sua V1 era a versão portátil em pasta solta, basta apagar o arquivo/pasta antigo da V1 e excluir o atalho antigo da sua Área de Trabalho para não confundir com o novo).*
 2. **2️⃣ Baixar o Instalador Oficial no GitHub**:
    * Clique no botão verde **DOWNLOAD WINDOWS** no topo desta página ou baixe diretamente o arquivo com **`Setup`** no nome:
-     👉 **[`Break-Point-Folder-Organizer-Setup-1.0.4.exe`](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Break-Point-Folder-Organizer-Setup-1.0.4.exe)**
+     👉 **[`Break-Point-Folder-Organizer-Setup-1.0.5.exe`](https://github.com/Joao7001/BreakPointFolderOrganizer/releases/latest/download/Break-Point-Folder-Organizer-Setup-1.0.5.exe)**
 3. **3️⃣ Instalar no Computador (e passar pela tela azul do Windows)**:
-   * Abra o arquivo `Break-Point-Folder-Organizer-Setup-1.0.4.exe` baixado.
+   * Abra o arquivo `Break-Point-Folder-Organizer-Setup-1.0.5.exe` baixado.
    * Caso o Windows SmartScreen exiba a tela azul (*"O Windows protegeu o computador"*), clique em **`Mais informações`** → **`Executar assim mesmo`**.
    * Conclua o assistente de instalação clicando em **Avançar / Instalar** e **Concluir**.
 4. **4️⃣ Pronto! Atualização Automática Ativa (`AutoUpdater`)**:
